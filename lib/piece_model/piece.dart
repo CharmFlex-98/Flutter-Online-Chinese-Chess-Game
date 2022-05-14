@@ -8,7 +8,6 @@ abstract class Piece {
   late Point currentPoint;
   String imagePath;
   bool isRed;
-  bool _isActive = false;
   late List<Point> killPoint = [];
 
   Piece(int xIndex, int yIndex, this.isRed, this.imagePath) {
@@ -18,14 +17,6 @@ abstract class Piece {
 
   void resetPos() {
     move(initialPoint);
-  }
-
-  void activate() {
-    _isActive = true;
-  }
-
-  void deactivate() {
-    _isActive = false;
   }
 
   void move(Point toPoint) {

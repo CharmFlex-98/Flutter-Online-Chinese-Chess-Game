@@ -33,7 +33,7 @@ class King extends Piece {
     // down
     if ((currentPoint.y + 1 <= 9 && currentPoint.y + 1 >= 7) ||
         (currentPoint.y + 1 <= 2 && currentPoint.y + 1 >= 0)) {
-      appendAvailablePoint(board, Point(currentPoint.x + 1, currentPoint.y),
+      appendAvailablePoint(board, Point(currentPoint.x, currentPoint.y + 1),
           movePoint, killPoint);
     }
 
@@ -42,7 +42,6 @@ class King extends Piece {
 
   @override
   List<Point> possibleKillPoint(List<List<Piece?>> board) {
-    // TODO: implement possibleKillPoint
-    throw UnimplementedError();
+    return killPoint;
   }
 }

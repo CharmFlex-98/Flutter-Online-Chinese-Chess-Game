@@ -121,7 +121,16 @@ class _ChessBoardState extends State<ChessBoard> {
       ),
       for (Piece piece in piecesOnBoard()) positionPiece(piece),
       ...moveBoundingBoxes,
-      ...killBoundingBoxes
+      ...killBoundingBoxes,
+      GameManager.gameIsEnd()
+          ? Container(
+              color: GameManager.isRedTurn() == GameManager.isRedTeam()
+                  ? Colors.green
+                  : Colors.red,
+              child: Text(GameManager.isRedTurn() == GameManager.isRedTeam()
+                  ? "You win!"
+                  : "You lose!"))
+          : const SizedBox(),
     ]);
   }
 
@@ -202,6 +211,8 @@ class _ChessBoardState extends State<ChessBoard> {
     killBoundingBoxes = [];
     _selectedPiece = null;
     GameManager.changeTurn();
+
+    if (checkIfGameEnd(GameManager.isRedTurn())) GameManager.endGame();
   }
 
   void drawAvailableMovePath(Piece piece) {
@@ -254,8 +265,6 @@ class _ChessBoardState extends State<ChessBoard> {
     postManipulationProcess();
   }
 
-  void updateBoard() {}
-
   double getXPos(Piece piece, {int? xIndex}) {
     if (xIndex != null) {
       return widget.xOffset +
@@ -286,5 +295,110 @@ class _ChessBoardState extends State<ChessBoard> {
     return ((yPos - widget.yOffset) /
             ((widget.constraints.maxHeight * 660 / 720) / 9))
         .floor();
+  }
+
+  // what is consider an ending match?
+  // **if isRedTurn == true, enemy = black, else enemy = red**
+  // 1. enemy killed your king...
+  // 2. for every possible move, enemy can kill you
+  // return true if game end and you lo
+  bool checkIfGameEnd(bool isRedTurn) {
+    // this is not so good because it rebuild every move
+    List<Piece> enemyPieces = [];
+    List<Piece> selfPieces = [];
+
+    grouping(selfPieces, enemyPieces, isRedTurn);
+
+    // 1.
+    if (!kingExistedOnBoard(selfPieces)) return true;
+
+    // 2.
+    if (!tryAvoidGetKilled(selfPieces, enemyPieces, isRedTurn)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  bool kingExistedOnBoard(List<Piece> selfPieces) {
+    for (Piece piece in selfPieces) {
+      if (piece is King) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // might need to increase the performance
+  // return true if enemy king can be killed
+  bool tryKillKing(
+      List<List<Piece?>> fakeBoard, List<Piece> selfPieces, bool isRed) {
+    for (Piece piece in selfPieces) {
+      List<Point> allPossibleMovePoint = [
+        ...piece.possibleMovePoint(fakeBoard),
+        ...piece.possibleKillPoint(fakeBoard)
+      ];
+      for (Point movePoint in allPossibleMovePoint) {
+        if (fakeBoard[movePoint.x][movePoint.y] == null) continue;
+        Piece goingToBeKilledPiece = fakeBoard[movePoint.x][movePoint.y]!;
+
+        if (goingToBeKilledPiece.isRed != isRed &&
+            goingToBeKilledPiece is King) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  // return false if impossible to avoid from getting killed.
+  bool tryAvoidGetKilled(
+      List<Piece> selfPieces, List<Piece> enemyPieces, bool isRedTurn) {
+    for (Piece piece in selfPieces) {
+      List<Point> allPossibleSelfMovePoint = [
+        ...piece.possibleMovePoint(widget.board),
+        ...piece.possibleKillPoint(widget.board)
+      ];
+
+      // for every self move,
+      for (Point movePoint in allPossibleSelfMovePoint) {
+        List<List<Piece?>> fakeBoard = [];
+        for (List<Piece?> pieces in widget.board) {
+          fakeBoard.add([...pieces]);
+        }
+
+        List<Piece> enemyPiecesClone = [...enemyPieces];
+
+        enemyPiecesClone = enemyPiecesClone.where((enemyPiece) {
+          return enemyPiece != fakeBoard[movePoint.x][movePoint.y];
+        }).toList();
+        fakeBoard[movePoint.x][movePoint.y] = piece;
+        fakeBoard[piece.currentPoint.x][piece.currentPoint.y] = null;
+
+        // if one enemy pieces can kill king,
+        // we return false.
+        if (!tryKillKing(fakeBoard, enemyPiecesClone, !isRedTurn)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  void grouping(List<Piece> selfPieces, List<Piece> enemyPieces, isRedTurn) {
+    for (List<Piece?> pieces in widget.board) {
+      for (Piece? piece in pieces) {
+        if (piece == null) continue;
+
+        if (piece.isRed == isRedTurn) {
+          selfPieces.add(piece);
+        } else if (piece.isRed != isRedTurn) {
+          enemyPieces.add(piece);
+        }
+      }
+    }
   }
 }
