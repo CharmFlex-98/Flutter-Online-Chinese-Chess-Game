@@ -12,12 +12,11 @@ import 'package:mobile_chinese_chess/utilities.dart';
 
 class ChessBoard extends StatefulWidget {
   final BoxConstraints constraints;
-  late double pieceWidth;
-  late double pieceHeight;
-  late double xOffset;
-  late double yOffset;
+  late final double pieceWidth;
+  late final double pieceHeight;
+  late final double xOffset;
+  late final double yOffset;
   late final List<Piece> pieces;
-  late List<List<Piece?>> board;
 
   ChessBoard(this.constraints, {Key? key}) : super(key: key) {
     pieces = [
@@ -59,22 +58,7 @@ class ChessBoard extends StatefulWidget {
     ];
 
     initBoardDim();
-    initBoard();
     GameManager.init();
-  }
-
-  void initBoard() {
-    const row = 10;
-    const column = 9;
-    board =
-        List.generate(column, (index) => List.generate(row, (index) => null));
-
-    for (Piece piece in pieces) {
-      final x = piece.initialPoint.x;
-      final y = piece.initialPoint.y;
-
-      board[x][y] = piece;
-    }
   }
 
   void initBoardDim() {
@@ -89,9 +73,30 @@ class ChessBoard extends StatefulWidget {
 }
 
 class _ChessBoardState extends State<ChessBoard> {
+  late List<List<Piece?>> board;
   Piece? _selectedPiece;
   List<CustomPaint> moveBoundingBoxes = [];
   List<CustomPaint> killBoundingBoxes = [];
+
+  void initBoard() {
+    const row = 10;
+    const column = 9;
+    board =
+        List.generate(column, (index) => List.generate(row, (index) => null));
+
+    for (Piece piece in widget.pieces) {
+      final x = piece.initialPoint.x;
+      final y = piece.initialPoint.y;
+
+      board[x][y] = piece;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initBoard();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,8 +107,7 @@ class _ChessBoardState extends State<ChessBoard> {
             int xIndex = getXIndex(details.localPosition.dx);
             int yIndex = getYIndex(details.localPosition.dy);
 
-            for (Point point
-                in _selectedPiece!.possibleMovePoint(widget.board)) {
+            for (Point point in _selectedPiece!.possibleMovePoint(board)) {
               if (point.x == xIndex && point.y == yIndex) {
                 setState(() {
                   movePiece(_selectedPiece!, point);
@@ -124,12 +128,8 @@ class _ChessBoardState extends State<ChessBoard> {
       ...killBoundingBoxes,
       GameManager.gameIsEnd()
           ? Container(
-              color: GameManager.isRedTurn() == GameManager.isRedTeam()
-                  ? Colors.green
-                  : Colors.red,
-              child: Text(GameManager.isRedTurn() == GameManager.isRedTeam()
-                  ? "You win!"
-                  : "You lose!"))
+              color: GameManager.win() ? Colors.green : Colors.red,
+              child: Text(GameManager.win() ? "You win!" : "You lose!"))
           : const SizedBox(),
     ]);
   }
@@ -163,12 +163,11 @@ class _ChessBoardState extends State<ChessBoard> {
   void tryKillPiece(Piece piece) {
     if (_selectedPiece == null) return;
 
-    for (Point point in _selectedPiece!.possibleKillPoint(widget.board)) {
+    for (Point point in _selectedPiece!.possibleKillPoint(board)) {
       if (piece.currentPoint.x == point.x && piece.currentPoint.y == point.y) {
-        widget.board[piece.currentPoint.x][piece.currentPoint.y] =
-            _selectedPiece;
-        widget.board[_selectedPiece!.currentPoint.x]
-            [_selectedPiece!.currentPoint.y] = null;
+        board[piece.currentPoint.x][piece.currentPoint.y] = _selectedPiece;
+        board[_selectedPiece!.currentPoint.x][_selectedPiece!.currentPoint.y] =
+            null;
         _selectedPiece!.move(Point(piece.currentPoint.x, piece.currentPoint.y));
         postManipulationProcess();
         break;
@@ -196,7 +195,7 @@ class _ChessBoardState extends State<ChessBoard> {
   List<Piece> piecesOnBoard() {
     List<Piece> remainingPieces = [];
 
-    for (List<Piece?> pieces in widget.board) {
+    for (List<Piece?> pieces in board) {
       for (Piece? piece in pieces) {
         if (piece == null) continue;
         remainingPieces.add(piece);
@@ -212,7 +211,9 @@ class _ChessBoardState extends State<ChessBoard> {
     _selectedPiece = null;
     GameManager.changeTurn();
 
-    if (checkIfGameEnd(GameManager.isRedTurn())) GameManager.endGame();
+    if (checkIfGameEnd(GameManager.isRedTurn())) {
+      GameManager.endGame(redWin: !GameManager.isRedTurn());
+    }
   }
 
   void drawAvailableMovePath(Piece piece) {
@@ -227,7 +228,7 @@ class _ChessBoardState extends State<ChessBoard> {
           Colors.green),
     ));
 
-    for (Point point in piece.possibleMovePoint(widget.board)) {
+    for (Point point in piece.possibleMovePoint(board)) {
       moveBoundingBoxes.add(CustomPaint(
         foregroundPainter: BoundingBoxPainter(
             getXPos(piece, xIndex: point.x),
@@ -241,7 +242,7 @@ class _ChessBoardState extends State<ChessBoard> {
 
   void drawAvailableKillPath(Piece piece) {
     killBoundingBoxes = [];
-    for (Point point in piece.possibleKillPoint(widget.board)) {
+    for (Point point in piece.possibleKillPoint(board)) {
       killBoundingBoxes.add(
         CustomPaint(
           foregroundPainter: BoundingBoxPainter(
@@ -258,8 +259,8 @@ class _ChessBoardState extends State<ChessBoard> {
   void movePiece(Piece piece, Point toPoint) {
     Point initialPoint = piece.currentPoint;
 
-    widget.board[initialPoint.x][initialPoint.y] = null;
-    widget.board[toPoint.x][toPoint.y] = piece;
+    board[initialPoint.x][initialPoint.y] = null;
+    board[toPoint.x][toPoint.y] = piece;
     piece.move(toPoint);
 
     postManipulationProcess();
@@ -297,13 +298,7 @@ class _ChessBoardState extends State<ChessBoard> {
         .floor();
   }
 
-  // what is consider an ending match?
-  // **if isRedTurn == true, enemy = black, else enemy = red**
-  // 1. enemy killed your king...
-  // 2. for every possible move, enemy can kill you
-  // return true if game end and you lo
   bool checkIfGameEnd(bool isRedTurn) {
-    // this is not so good because it rebuild every move
     List<Piece> enemyPieces = [];
     List<Piece> selfPieces = [];
 
@@ -342,9 +337,15 @@ class _ChessBoardState extends State<ChessBoard> {
       for (Point movePoint in allPossibleMovePoint) {
         if (fakeBoard[movePoint.x][movePoint.y] == null) continue;
         Piece goingToBeKilledPiece = fakeBoard[movePoint.x][movePoint.y]!;
+        // print(fakeBoard);
+        // print(
+        //     "$goingToBeKilledPiece, who kill? $piece, ${movePoint.x}, ${movePoint.y}");
 
         if (goingToBeKilledPiece.isRed != isRed &&
             goingToBeKilledPiece is King) {
+          // testing(fakeBoard, piece);
+          // print(fakeBoard);
+
           return true;
         }
       }
@@ -353,19 +354,25 @@ class _ChessBoardState extends State<ChessBoard> {
     return false;
   }
 
+  void testing(List<List<Piece?>> board, Piece piece) {
+    for (Point point in piece.possibleKillPoint(board)) {
+      print("-->${point.x}, ${point.y}");
+    }
+  }
+
   // return false if impossible to avoid from getting killed.
   bool tryAvoidGetKilled(
       List<Piece> selfPieces, List<Piece> enemyPieces, bool isRedTurn) {
     for (Piece piece in selfPieces) {
       List<Point> allPossibleSelfMovePoint = [
-        ...piece.possibleMovePoint(widget.board),
-        ...piece.possibleKillPoint(widget.board)
+        ...piece.possibleMovePoint(board),
+        ...piece.possibleKillPoint(board)
       ];
 
       // for every self move,
       for (Point movePoint in allPossibleSelfMovePoint) {
         List<List<Piece?>> fakeBoard = [];
-        for (List<Piece?> pieces in widget.board) {
+        for (List<Piece?> pieces in board) {
           fakeBoard.add([...pieces]);
         }
 
@@ -377,11 +384,22 @@ class _ChessBoardState extends State<ChessBoard> {
         fakeBoard[movePoint.x][movePoint.y] = piece;
         fakeBoard[piece.currentPoint.x][piece.currentPoint.y] = null;
 
+        // temporarily change the current point
+        piece.tempPoint = Point(piece.currentPoint.x, piece.currentPoint.y);
+        piece.currentPoint.x = movePoint.x;
+        piece.currentPoint.y = movePoint.y;
+
         // if one enemy pieces can kill king,
         // we return false.
         if (!tryKillKing(fakeBoard, enemyPiecesClone, !isRedTurn)) {
+          // restore current point
+          piece.currentPoint = piece.tempPoint!;
+
           return true;
         }
+
+        //restire current point
+        piece.currentPoint = piece.tempPoint!;
       }
     }
 
@@ -389,7 +407,7 @@ class _ChessBoardState extends State<ChessBoard> {
   }
 
   void grouping(List<Piece> selfPieces, List<Piece> enemyPieces, isRedTurn) {
-    for (List<Piece?> pieces in widget.board) {
+    for (List<Piece?> pieces in board) {
       for (Piece? piece in pieces) {
         if (piece == null) continue;
 

@@ -2,13 +2,13 @@ import 'package:mobile_chinese_chess/utilities.dart';
 
 class GameManager {
   static late bool _isRedTurn;
-  static late bool _redWin;
+  static late bool _win;
   static late bool _isRedTeam;
   static bool _gameEnd = false;
 
   static void init() {
     _isRedTurn = true;
-    setTeam(false);
+    setTeam(isRedTeam: true);
   }
 
   static void changeTurn() {
@@ -31,20 +31,22 @@ class GameManager {
     return null;
   }
 
-  static void setWinner(bool redWin) {
-    _redWin = redWin;
+  static bool win() {
+    return _win;
   }
 
   static bool isRedTeam() {
     return _isRedTeam;
   }
 
-  static void setTeam(bool isRedTeam) {
+  static void setTeam({bool isRedTeam = true}) {
     _isRedTeam = isRedTeam;
   }
 
-  static void endGame() {
+  static void endGame({bool redWin = true}) {
     _gameEnd = true;
+    _win = redWin && isRedTeam() ? true : false;
+    print(_win);
   }
 
   static bool gameIsEnd() {

@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
 
 abstract class Piece {
@@ -6,6 +5,7 @@ abstract class Piece {
   static const maxX = 8;
   late Point initialPoint;
   late Point currentPoint;
+  Point? tempPoint;
   String imagePath;
   bool isRed;
   late List<Point> killPoint = [];

@@ -27,7 +27,6 @@ class Canon extends Piece {
     for (var y = currentPoint.y - 1; y >= 0; y--) {
       if (board[currentPoint.x][y] != null) {
         for (var nextY = y - 1; nextY >= 0; nextY--) {
-          print(nextY);
           if (!continueAppendKillPoint(
               board[currentPoint.x][nextY], killPoint)) {
             break;
