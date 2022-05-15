@@ -3,14 +3,14 @@ import 'package:mobile_chinese_chess/utilities.dart';
 
 import 'chess_ui/chessBoard.dart';
 
-class MainPage extends StatefulWidget {
-  const MainPage({Key? key}) : super(key: key);
+class InGamePage extends StatefulWidget {
+  const InGamePage({Key? key}) : super(key: key);
 
   @override
-  _MainPageState createState() => _MainPageState();
+  _InGamePageState createState() => _InGamePageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _InGamePageState extends State<InGamePage> {
   @override
   Widget build(BuildContext context) {
     SizeController.init(context);
@@ -22,7 +22,10 @@ class _MainPageState extends State<MainPage> {
         body: Column(children: [
           Expanded(
             child: LayoutBuilder(builder: (context, constraints) {
-              return ChessBoard(constraints);
+              return ChessBoard(
+                constraints,
+                isRedTeam: true,
+              );
             }),
           ),
           Container(

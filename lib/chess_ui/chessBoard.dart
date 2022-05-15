@@ -18,8 +18,62 @@ class ChessBoard extends StatefulWidget {
   late final double yOffset;
   late final List<Piece> pieces;
 
-  ChessBoard(this.constraints, {Key? key}) : super(key: key) {
-    pieces = [
+  ChessBoard(this.constraints, {bool isRedTeam = true, Key? key})
+      : super(key: key) {
+    GameManager.init(isRedTeam: isRedTeam);
+    pieces = initPiecesPos(GameManager.isRedTeam());
+    initBoardDim();
+  }
+
+  void initBoardDim() {
+    pieceWidth = constraints.maxWidth / 9;
+    pieceHeight = constraints.maxHeight / 10;
+    xOffset = 36 / 642 * constraints.maxWidth - pieceWidth / 2;
+    yOffset = 31 / 720 * constraints.maxHeight - pieceHeight / 2;
+  }
+
+  List<Piece> initPiecesPos(bool isRedTeam) {
+    if (isRedTeam) {
+      return [
+        // red
+        Rook(0, 9, true, "assets/r_rook.png"),
+        Knight(1, 9, true, "assets/r_knight.png"),
+        Elephant(2, 9, true, "assets/r_elephant.png"),
+        Guide(3, 9, true, "assets/r_guide.png"),
+        King(4, 9, true, "assets/r_king.png"),
+        Guide(5, 9, true, "assets/r_guide.png"),
+        Elephant(6, 9, true, "assets/r_elephant.png"),
+        Knight(7, 9, true, "assets/r_knight.png"),
+        Rook(8, 9, true, "assets/r_rook.png"),
+        Canon(1, 7, true, "assets/r_canon.png"),
+        Canon(7, 7, true, "assets/r_canon.png"),
+        Soldier(0, 6, true, "assets/r_soldier.png"),
+        Soldier(2, 6, true, "assets/r_soldier.png"),
+        Soldier(4, 6, true, "assets/r_soldier.png"),
+        Soldier(6, 6, true, "assets/r_soldier.png"),
+        Soldier(8, 6, true, "assets/r_soldier.png"),
+
+        // black
+        Rook(0, 0, false, "assets/b_rook.png"),
+        Knight(1, 0, false, "assets/b_knight.png"),
+        Elephant(2, 0, false, "assets/b_elephant.png"),
+        Guide(3, 0, false, "assets/b_guide.png"),
+        King(4, 0, false, "assets/b_king.png"),
+        Guide(5, 0, false, "assets/b_guide.png"),
+        Elephant(6, 0, false, "assets/b_elephant.png"),
+        Knight(7, 0, false, "assets/b_knight.png"),
+        Rook(8, 0, false, "assets/b_rook.png"),
+        Canon(1, 2, false, "assets/b_canon.png"),
+        Canon(7, 2, false, "assets/b_canon.png"),
+        Soldier(0, 3, false, "assets/b_soldier.png"),
+        Soldier(2, 3, false, "assets/b_soldier.png"),
+        Soldier(4, 3, false, "assets/b_soldier.png"),
+        Soldier(6, 3, false, "assets/b_soldier.png"),
+        Soldier(8, 3, false, "assets/b_soldier.png"),
+      ];
+    }
+
+    return [
       // red
       Rook(0, 0, true, "assets/r_rook.png"),
       Knight(1, 0, true, "assets/r_knight.png"),
@@ -29,7 +83,7 @@ class ChessBoard extends StatefulWidget {
       Guide(5, 0, true, "assets/r_guide.png"),
       Elephant(6, 0, true, "assets/r_elephant.png"),
       Knight(7, 0, true, "assets/r_knight.png"),
-      Rook(8, 0, true, "assets/r_rook.png"),
+      Rook(8, 9, true, "assets/r_rook.png"),
       Canon(1, 2, true, "assets/r_canon.png"),
       Canon(7, 2, true, "assets/r_canon.png"),
       Soldier(0, 3, true, "assets/r_soldier.png"),
@@ -56,16 +110,6 @@ class ChessBoard extends StatefulWidget {
       Soldier(6, 6, false, "assets/b_soldier.png"),
       Soldier(8, 6, false, "assets/b_soldier.png"),
     ];
-
-    initBoardDim();
-    GameManager.init();
-  }
-
-  void initBoardDim() {
-    pieceWidth = constraints.maxWidth / 9;
-    pieceHeight = constraints.maxHeight / 10;
-    xOffset = 36 / 642 * constraints.maxWidth - pieceWidth / 2;
-    yOffset = 31 / 720 * constraints.maxHeight - pieceHeight / 2;
   }
 
   @override

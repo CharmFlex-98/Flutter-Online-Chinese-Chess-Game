@@ -6,9 +6,9 @@ class GameManager {
   static late bool _isRedTeam;
   static bool _gameEnd = false;
 
-  static void init() {
+  static void init({bool isRedTeam = true}) {
     _isRedTurn = true;
-    setTeam(isRedTeam: true);
+    setTeam(isRedTeam: isRedTeam);
   }
 
   static void changeTurn() {
@@ -27,8 +27,16 @@ class GameManager {
     _isRedTurn = false;
   }
 
-  static Point? boardPointConvert() {
-    return null;
+  static Point boardPointConvert(Point pointFrom, {bool needToConvert = true}) {
+    return needToConvert ? Point(pointFrom.x, pointFrom.y) : pointFrom;
+  }
+
+  static int boardPointXConvert(int pointX) {
+    return 8 - pointX;
+  }
+
+  static int boardPointYConvert(int pointY) {
+    return 9 - pointY;
   }
 
   static bool win() {
