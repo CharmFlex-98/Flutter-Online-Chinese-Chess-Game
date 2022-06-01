@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_chinese_chess/client/player.dart';
+import 'package:mobile_chinese_chess/client/room.dart';
 import 'package:mobile_chinese_chess/game_manager.dart';
 import 'package:mobile_chinese_chess/pages/in_game_page.dart';
 import 'package:mobile_chinese_chess/client/web_socket_client.dart';
@@ -16,14 +18,25 @@ class _LobbyPageState extends State<LobbyPage> {
     return Scaffold(
         appBar: AppBar(title: const Text("Mobile Chinese Chess Game")),
         body: Center(
-          child: TextButton(
-            onPressed: () {
-              createPlayer(isRedTeam: true);
-              enterGame();
-            },
-            child: const Text("Enter Game"),
-          ),
-        ));
+            child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextButton(
+              onPressed: () {
+                initializeGame("Ming", "testingRoom", isRedTeam: true);
+                //enterGame();
+              },
+              child: const Text("Enter Game"),
+            ),
+            TextButton(
+              onPressed: () {
+                initializeGame("Chi", "testingRoom", isRedTeam: false);
+                // enterGame();
+              },
+              child: const Text("Enter Game"),
+            ),
+          ],
+        )));
   }
 
   void enterGame() {
@@ -32,8 +45,24 @@ class _LobbyPageState extends State<LobbyPage> {
     }));
   }
 
-  void createPlayer({bool isRedTeam = true}) {
+  Player createPlayer(String playerId, {bool isRedTeam = true}) {
     GameManager.init(isRedTeam: isRedTeam);
-    WebSocketClient.send("1 player joined!");
+    Player player = Player(playerId);
+
+    return player;
+  }
+
+  // just for testing
+  Room createRoom(String roomId) {
+    Room room = Room(roomId);
+
+    return room;
+  }
+
+  void initializeGame(String playerId, String roomId, {bool isRedTeam = true}) {
+    Player player = createPlayer(playerId, isRedTeam: isRedTeam);
+    Room room = createRoom(roomId);
+
+    room.join(player);
   }
 }
