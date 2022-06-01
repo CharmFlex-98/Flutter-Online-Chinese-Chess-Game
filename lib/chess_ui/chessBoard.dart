@@ -18,9 +18,7 @@ class ChessBoard extends StatefulWidget {
   late final double yOffset;
   late final List<Piece> pieces;
 
-  ChessBoard(this.constraints, {bool isRedTeam = true, Key? key})
-      : super(key: key) {
-    GameManager.init(isRedTeam: isRedTeam);
+  ChessBoard(this.constraints, {Key? key}) : super(key: key) {
     pieces = initPiecesPos(GameManager.isRedTeam());
     initBoardDim();
   }

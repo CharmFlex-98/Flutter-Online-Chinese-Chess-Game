@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_chinese_chess/mainPage.dart';
+import 'package:mobile_chinese_chess/pages/in_game_page.dart';
+import 'package:mobile_chinese_chess/pages/lobby_page.dart';
+import 'package:mobile_chinese_chess/client/web_socket_client.dart';
 
 void main() {
+  WebSocketClient.init();
   runApp(const MyApp());
 }
 
@@ -16,7 +19,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const InGamePage(),
+      home: const LobbyPage(),
     );
   }
 }

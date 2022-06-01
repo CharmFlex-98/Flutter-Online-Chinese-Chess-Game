@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
 
-import 'chess_ui/chessBoard.dart';
+import '../chess_ui/chessBoard.dart';
 
 class InGamePage extends StatefulWidget {
   const InGamePage({Key? key}) : super(key: key);
@@ -22,10 +22,7 @@ class _InGamePageState extends State<InGamePage> {
         body: Column(children: [
           Expanded(
             child: LayoutBuilder(builder: (context, constraints) {
-              return ChessBoard(
-                constraints,
-                isRedTeam: true,
-              );
+              return ChessBoard(constraints);
             }),
           ),
           Container(
