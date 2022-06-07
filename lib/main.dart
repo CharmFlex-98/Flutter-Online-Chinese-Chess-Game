@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_chinese_chess/pages/in_game_page.dart';
+import 'package:mobile_chinese_chess/UI/game_ui.dart';
+import 'package:mobile_chinese_chess/client/game_lobby.dart';
+import 'package:mobile_chinese_chess/client/user.dart';
+import 'package:mobile_chinese_chess/client/waiting_room.dart';
 import 'package:mobile_chinese_chess/pages/lobby_page.dart';
-import 'package:mobile_chinese_chess/client/web_socket_client.dart';
+import 'package:mobile_chinese_chess/pages/login_page.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  WebSocketClient.init();
   runApp(const MyApp());
 }
 
@@ -14,12 +17,23 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Mobile Chinese Chess',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    GameLobby gameLobby = GameLobby(key: "roomList");
+
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: gameLobby),
+        ChangeNotifierProvider<WaitingRoom>(
+            create: (_) =>
+                WaitingRoom(key: "rommInfo", owner: User.getUserId()))
+      ],
+      child: MaterialApp(
+        color: mC,
+        title: 'Mobile Chinese Chess',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: LoginPage(),
       ),
-      home: const LobbyPage(),
     );
   }
 }

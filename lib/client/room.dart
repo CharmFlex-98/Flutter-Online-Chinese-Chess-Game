@@ -2,10 +2,15 @@ import 'player.dart';
 import 'package:mobile_chinese_chess/client/web_socket_client.dart';
 
 class Room {
-  final String _id;
-  List<Player> players = [];
+  final int _id;
+  final String owner;
+  List<dynamic> players = [];
 
-  Room(this._id);
+  Room(this._id, this.owner, this.players);
+
+  int id() {
+    return _id;
+  }
 
   bool isEmpty() {
     return players.isEmpty;
