@@ -1,39 +1,34 @@
-import 'package:mobile_chinese_chess/client/gameChangeNotifier.dart';
+import 'package:mobile_chinese_chess/client/stream_listener.dart';
 import 'package:mobile_chinese_chess/client/user.dart';
 import 'package:mobile_chinese_chess/client/web_socket_client.dart';
 
-class WaitingRoom extends GameChangeNotifier {
+class WaitingRoom extends StreamListener {
   String owner;
-  List<String> redTeam = [];
-  List<String> blackTeam = [];
+  List<String> redPlayers = [];
+  List<String> blackPlayers = [];
 
   WaitingRoom({required String key, required this.owner}) : super(key) {
-    WebSocketClient.addListener(this);
-    redTeam.add(owner);
-  }
-
-  @override
-  bool update() {
-    _updateTeamSelection();
-    notifyListeners();
-    return true;
-  }
-
-  @override
-  bool isTargetListener({dynamic receivedInfo}) {
-    super.isTargetListener(receivedInfo: receivedInfo);
-
-    return getReceivedInfo() != null;
-  }
-
-  void _updateTeamSelection() {
-    redTeam = getReceivedInfo()[0]["redPlayers"];
-    blackTeam = getReceivedInfo()[0]["blackPlayers"];
+    redPlayers.add(owner);
   }
 
   void destroyRoom() {
-    redTeam.clear();
-    blackTeam.clear();
-    redTeam.add(owner);
+    redPlayers.clear();
+    blackPlayers.clear();
+    redPlayers.add(owner);
+  }
+
+  @override
+  void update() {
+    print("update in waiting room");
+    print(data());
+    owner = data()["owner"];
+    redPlayers = List<String>.from(data()["redPlayers"]).toList();
+    blackPlayers = List<String>.from(data()["blackPlayers"]).toList();
+    print("red team : $redPlayers   blackTeam : $blackPlayers");
+  }
+
+  @override
+  dynamic extractRealInfo(receivedStream) {
+    return receivedStream[key];
   }
 }

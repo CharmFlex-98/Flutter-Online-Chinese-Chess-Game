@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
 import 'package:mobile_chinese_chess/client/waiting_room.dart';
@@ -5,7 +7,11 @@ import 'package:mobile_chinese_chess/client/web_socket_client.dart';
 import 'package:provider/provider.dart';
 
 class WaitingRoomWidget extends StatefulWidget {
-  const WaitingRoomWidget({Key? key}) : super(key: key);
+  final WaitingRoom waitingRoom;
+  final Stream stream;
+  const WaitingRoomWidget(
+      {required this.waitingRoom, required this.stream, Key? key})
+      : super(key: key);
 
   @override
   State<WaitingRoomWidget> createState() => _WaitingRoomWidgetState();
@@ -13,10 +19,15 @@ class WaitingRoomWidget extends StatefulWidget {
 
 class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
   bool _chooseRed = true;
+
+  @override
+  void initState() {
+    streamCB();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    WaitingRoom waitingRoom = Provider.of<WaitingRoom>(context);
-
     return LayoutBuilder(
       builder: (buildContext, constraints) {
         return Column(
@@ -24,15 +35,15 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
             waitingRoomCard(
                 constraints: constraints,
                 title: "RED",
-                playerName: waitingRoom.redTeam.isEmpty
+                playerName: widget.waitingRoom.redPlayers.isEmpty
                     ? null
-                    : waitingRoom.redTeam[0]),
+                    : widget.waitingRoom.redPlayers[0]),
             waitingRoomCard(
                 constraints: constraints,
                 title: "BLACK",
-                playerName: waitingRoom.blackTeam.isEmpty
+                playerName: widget.waitingRoom.blackPlayers.isEmpty
                     ? null
-                    : waitingRoom.blackTeam[0]),
+                    : widget.waitingRoom.blackPlayers[0]),
             Expanded(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -110,5 +121,13 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
   void leaveRoom() {
     WebSocketClient.send("leave room");
     Navigator.of(context).pop();
+  }
+
+  void streamCB() {
+    widget.stream.listen((event) {
+      if (widget.waitingRoom.isTargetListener(jsonDecode(event))) {
+        widget.waitingRoom.update();
+      }
+    });
   }
 }

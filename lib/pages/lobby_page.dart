@@ -19,9 +19,13 @@ class LobbyPage extends StatefulWidget {
 }
 
 class _LobbyPageState extends State<LobbyPage> {
+  final GameLobby gameLobby = GameLobby(key: "roomList");
+  late Stream broadcastStream;
+
   @override
   void initState() {
     WebSocketClient.init();
+    broadcastStream = WebSocketClient.channel().stream.asBroadcastStream();
     WebSocketClient.send("refresh lobby");
     super.initState();
   }
@@ -37,7 +41,11 @@ class _LobbyPageState extends State<LobbyPage> {
           children: [
             const LobbyStat(),
             createLobbyBtn(),
-            const Expanded(child: LobbyListBox())
+            Expanded(
+                child: LobbyListBox(
+              gameLobby: gameLobby,
+              stream: broadcastStream,
+            ))
           ],
         ));
   }
@@ -50,7 +58,10 @@ class _LobbyPageState extends State<LobbyPage> {
           borderRadius: BorderRadius.circular(10.0),
         ),
         builder: (context) {
-          return const WaitingRoomWidget();
+          return WaitingRoomWidget(
+            stream: broadcastStream,
+            waitingRoom: WaitingRoom(key: "roomInfo", owner: User.getUserId()),
+          );
         });
     WebSocketClient.send("create room");
   }

@@ -1,13 +1,12 @@
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:mobile_chinese_chess/client/gameChangeNotifier.dart';
+import 'package:mobile_chinese_chess/client/stream_listener.dart';
 import 'package:mobile_chinese_chess/client/web_socket_client.dart';
 
 import 'room.dart';
 
-class GameLobby extends GameChangeNotifier {
-  GameLobby({required String key}) : super(key) {
-    WebSocketClient.addListener(this);
-  }
+class GameLobby extends StreamListener {
+  GameLobby({required String key}) : super(key);
+
   final List<Room> _rooms = [];
 
   void insertRoom(Room room) {
@@ -22,37 +21,32 @@ class GameLobby extends GameChangeNotifier {
     return _rooms;
   }
 
-  void _updateRoomList() {
+  @override
+  List<Map<String, dynamic>> preManipulation(receivedStream) {
+    dynamic info = receivedStream[key];
+
+    return List<Map<String, dynamic>>.from(info).toList();
+  }
+
+  @override
+  void update() {
+    print("update in gamelobby");
+    print(data());
     _rooms.clear();
-    for (dynamic room in getReceivedInfo()) {
-      _rooms.add(Room(room["roomId"], room["owner"]["id"],
-          [...room["redPlayers"], ...room["blackPlayers"]]));
+    for (dynamic roomInfo in data()) {
+      _rooms.add(Room(
+          id: roomInfo["roomId"],
+          owner: roomInfo["owner"],
+          players: [...roomInfo["redPlayers"], ...roomInfo["blackPlayers"]]));
+    }
+
+    for (Room room in _rooms) {
+      print("blackPlayer : ${room.players}");
     }
   }
 
-  void _notify() {
-    notifyListeners();
-    _newJoinerNotification();
-  }
-
-  void _newJoinerNotification() {
-    Fluttertoast.cancel();
-    Fluttertoast.showToast(msg: "new player joined!");
-  }
-
   @override
-  bool update() {
-    print("update");
-    _updateRoomList();
-    _notify();
-    return true;
-  }
-
-  @override
-  bool isTargetListener({required dynamic receivedInfo}) {
-    print(receivedInfo);
-    super.isTargetListener(receivedInfo: receivedInfo);
-
-    return getReceivedInfo() != null;
+  dynamic extractRealInfo(receivedStream) {
+    return receivedStream[key];
   }
 }

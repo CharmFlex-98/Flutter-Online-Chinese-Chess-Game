@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
@@ -5,7 +7,10 @@ import 'package:mobile_chinese_chess/client/game_lobby.dart';
 import 'package:provider/provider.dart';
 
 class LobbyListBox extends StatefulWidget {
-  const LobbyListBox({Key? key}) : super(key: key);
+  final GameLobby gameLobby;
+  final Stream stream;
+  const LobbyListBox({required this.gameLobby, required this.stream, Key? key})
+      : super(key: key);
 
   @override
   State<LobbyListBox> createState() => _LobbyListBoxState();
@@ -15,21 +20,25 @@ class _LobbyListBoxState extends State<LobbyListBox> {
   final double _cardHeightRatio = 0.08;
 
   @override
-  Widget build(BuildContext context) {
-    GameLobby gameLobby = Provider.of<GameLobby>(context);
+  void initState() {
+    streamCB();
+    super.initState();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Container(
       decoration: nMboxInvert,
       margin: const EdgeInsets.all(8),
       child: LayoutBuilder(
         builder: (context, constraints) {
           return ListView.builder(
-              itemCount: gameLobby.rooms().length,
+              itemCount: widget.gameLobby.rooms().length,
               padding: const EdgeInsets.all(12),
               itemBuilder: (BuildContext context, int index) {
                 return lobbyInfoCard(
                     cardHeight: constraints.maxHeight * _cardHeightRatio,
-                    owner: gameLobby.rooms()[index].owner,
+                    owner: widget.gameLobby.rooms()[index].owner,
                     publicRoom: true);
               });
         },
@@ -73,5 +82,16 @@ class _LobbyListBoxState extends State<LobbyListBox> {
         padding: const EdgeInsets.all(3),
         margin: const EdgeInsets.only(left: 12, right: 12),
         child: Text(text));
+  }
+
+  void streamCB() {
+    widget.stream.listen((event) {
+      dynamic info = jsonDecode(event);
+      if (widget.gameLobby.isTargetListener(info)) {
+        setState(() {
+          widget.gameLobby.update();
+        });
+      }
+    });
   }
 }

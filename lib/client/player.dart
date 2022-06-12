@@ -26,10 +26,4 @@ class Player {
   void unpair() {
     _opponent = null;
   }
-
-  void leaveRoom() {
-    if (_room == null) return;
-
-    _room!.leave(this);
-  }
 }
