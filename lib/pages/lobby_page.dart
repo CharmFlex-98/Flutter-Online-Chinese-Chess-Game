@@ -8,7 +8,7 @@ import 'package:mobile_chinese_chess/widgets/waiting_room_widget.dart';
 import 'package:mobile_chinese_chess/client/web_socket_client.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
 import 'package:mobile_chinese_chess/widgets/lobby_widgets/lobbyStat.dart';
-import 'package:mobile_chinese_chess/widgets/lobby_widgets/lobby_list_box.dart';
+import 'package:mobile_chinese_chess/widgets/lobby_widgets/room_list_box.dart';
 import 'package:provider/provider.dart';
 
 class LobbyPage extends StatefulWidget {
@@ -42,7 +42,7 @@ class _LobbyPageState extends State<LobbyPage> {
             const LobbyStat(),
             createLobbyBtn(),
             Expanded(
-                child: LobbyListBox(
+                child: RoomListBox(
               gameLobby: gameLobby,
               stream: broadcastStream,
             ))

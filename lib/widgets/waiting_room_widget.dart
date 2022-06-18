@@ -9,8 +9,12 @@ import 'package:provider/provider.dart';
 class WaitingRoomWidget extends StatefulWidget {
   final WaitingRoom waitingRoom;
   final Stream stream;
+  final bool isOwner;
   const WaitingRoomWidget(
-      {required this.waitingRoom, required this.stream, Key? key})
+      {required this.waitingRoom,
+      required this.stream,
+      Key? key,
+      this.isOwner = true})
       : super(key: key);
 
   @override
@@ -23,6 +27,10 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
   @override
   void initState() {
     streamCB();
+    if (!widget.isOwner) {
+      WebSocketClient.send("join ${widget.waitingRoom.owner}");
+    }
+
     super.initState();
   }
 
@@ -126,7 +134,9 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
   void streamCB() {
     widget.stream.listen((event) {
       if (widget.waitingRoom.isTargetListener(jsonDecode(event))) {
-        widget.waitingRoom.update();
+        setState(() {
+          widget.waitingRoom.update();
+        });
       }
     });
   }

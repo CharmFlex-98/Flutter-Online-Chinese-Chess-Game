@@ -4,19 +4,22 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
 import 'package:mobile_chinese_chess/client/game_lobby.dart';
+import 'package:mobile_chinese_chess/client/waiting_room.dart';
+import 'package:mobile_chinese_chess/client/web_socket_client.dart';
+import 'package:mobile_chinese_chess/widgets/waiting_room_widget.dart';
 import 'package:provider/provider.dart';
 
-class LobbyListBox extends StatefulWidget {
+class RoomListBox extends StatefulWidget {
   final GameLobby gameLobby;
   final Stream stream;
-  const LobbyListBox({required this.gameLobby, required this.stream, Key? key})
+  const RoomListBox({required this.gameLobby, required this.stream, Key? key})
       : super(key: key);
 
   @override
-  State<LobbyListBox> createState() => _LobbyListBoxState();
+  State<RoomListBox> createState() => _RoomListBoxState();
 }
 
-class _LobbyListBoxState extends State<LobbyListBox> {
+class _RoomListBoxState extends State<RoomListBox> {
   final double _cardHeightRatio = 0.08;
 
   @override
@@ -36,7 +39,7 @@ class _LobbyListBoxState extends State<LobbyListBox> {
               itemCount: widget.gameLobby.rooms().length,
               padding: const EdgeInsets.all(12),
               itemBuilder: (BuildContext context, int index) {
-                return lobbyInfoCard(
+                return roomInfoCard(
                     cardHeight: constraints.maxHeight * _cardHeightRatio,
                     owner: widget.gameLobby.rooms()[index].owner,
                     publicRoom: true);
@@ -46,7 +49,7 @@ class _LobbyListBoxState extends State<LobbyListBox> {
     );
   }
 
-  Widget lobbyInfoCard(
+  Widget roomInfoCard(
       {required String owner,
       required bool publicRoom,
       required double cardHeight}) {
@@ -70,7 +73,14 @@ class _LobbyListBoxState extends State<LobbyListBox> {
             ),
           ),
           label(publicRoom ? "PUBLIC" : "PRIVATE",
-              publicRoom ? Colors.green : Colors.red[700])
+              publicRoom ? Colors.green : Colors.red[700]),
+          Padding(
+              padding: const EdgeInsets.all(3),
+              child: TextButton(
+                  onPressed: () {
+                    joinRoom(owner);
+                  },
+                  child: const Text("JOIN")))
         ],
       ),
     );
@@ -93,5 +103,21 @@ class _LobbyListBoxState extends State<LobbyListBox> {
         });
       }
     });
+  }
+
+  void joinRoom(String owner) {
+    showModalBottomSheet(
+        context: context,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        builder: (context) {
+          return WaitingRoomWidget(
+            stream: widget.stream,
+            waitingRoom: WaitingRoom(key: "roomInfo", owner: owner),
+            isOwner: false,
+          );
+        });
   }
 }
