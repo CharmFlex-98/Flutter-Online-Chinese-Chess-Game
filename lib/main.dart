@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
-import 'package:mobile_chinese_chess/client/game_lobby.dart';
-import 'package:mobile_chinese_chess/client/user.dart';
-import 'package:mobile_chinese_chess/client/waiting_room.dart';
-import 'package:mobile_chinese_chess/pages/lobby_page.dart';
 import 'package:mobile_chinese_chess/pages/login_page.dart';
-import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());

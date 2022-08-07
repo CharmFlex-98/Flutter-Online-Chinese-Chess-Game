@@ -1,37 +1,28 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
-import 'package:mobile_chinese_chess/client/waiting_room.dart';
-import 'package:mobile_chinese_chess/client/web_socket_client.dart';
-import 'package:provider/provider.dart';
+import 'package:mobile_chinese_chess/client/socket_client.dart';
+import 'package:mobile_chinese_chess/gameInfo/roomInfo.dart';
 
 class WaitingRoomWidget extends StatefulWidget {
-  final WaitingRoom waitingRoom;
-  final Stream stream;
-  final bool isOwner;
-  const WaitingRoomWidget(
-      {required this.waitingRoom,
-      required this.stream,
-      Key? key,
-      this.isOwner = true})
-      : super(key: key);
+  dynamic data;
+
+  WaitingRoomWidget({required this.data, Key? key}) : super(key: key);
 
   @override
   State<WaitingRoomWidget> createState() => _WaitingRoomWidgetState();
 }
 
 class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
+  RoomInfo roomInfo = RoomInfo();
   bool _chooseRed = true;
 
   @override
   void initState() {
-    streamCB();
-    if (!widget.isOwner) {
-      WebSocketClient.send("join ${widget.waitingRoom.owner}");
-    }
-
     super.initState();
+    print("room data is");
+    print(widget.data);
+    roomInfo.updateInfo(widget.data);
+    socketClientCB();
   }
 
   @override
@@ -41,17 +32,17 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
         return Column(
           children: [
             waitingRoomCard(
-                constraints: constraints,
-                title: "RED",
-                playerName: widget.waitingRoom.redPlayers.isEmpty
-                    ? null
-                    : widget.waitingRoom.redPlayers[0]),
+              constraints: constraints,
+              title: "RED",
+              playerName:
+                  roomInfo.redPlayers.isNotEmpty ? roomInfo.redPlayers[0] : "",
+            ),
             waitingRoomCard(
                 constraints: constraints,
                 title: "BLACK",
-                playerName: widget.waitingRoom.blackPlayers.isEmpty
-                    ? null
-                    : widget.waitingRoom.blackPlayers[0]),
+                playerName: roomInfo.blackPlayers.isNotEmpty
+                    ? roomInfo.blackPlayers[0]
+                    : ""),
             Expanded(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -127,17 +118,39 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
   }
 
   void leaveRoom() {
-    WebSocketClient.send("leave room");
+    // WebSocketClient.send("leave room");
     Navigator.of(context).pop();
   }
 
-  void streamCB() {
-    widget.stream.listen((event) {
-      if (widget.waitingRoom.isTargetListener(jsonDecode(event))) {
-        setState(() {
-          widget.waitingRoom.update();
-        });
-      }
+  void ready() {
+    // WebSocketClient.send("ready");
+  }
+
+  void socketClientCB() {
+    final socket = SocketClient.instance().socket!;
+
+    socket.on("joinRoomSuccessed", (data) {
+      print("someone joined");
+      updateRoomStatus(data);
     });
   }
+
+  void updateRoomStatus(data) {
+    setState(() {
+      roomInfo.updateInfo(data);
+      print("after update info");
+      print(roomInfo.redPlayers);
+      print(roomInfo.blackPlayers);
+    });
+  }
+
+  // void streamCB() {
+  //   widget.stream.listen((event) {
+  //     if (widget.waitingRoom.isTargetListener(jsonDecode(event))) {
+  //       setState(() {
+  //         widget.waitingRoom.update();
+  //       });
+  //     }
+  //   });
+  // }
 }

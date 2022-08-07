@@ -1,13 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
-import 'package:mobile_chinese_chess/client/user.dart';
+import 'package:mobile_chinese_chess/client/socket_client.dart';
+import 'package:mobile_chinese_chess/client/socket_methods.dart';
 import 'package:mobile_chinese_chess/pages/lobby_page.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
+  const LoginPage({Key? key}) : super(key: key);
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final TextEditingController userNameController = TextEditingController();
 
-  LoginPage({Key? key}) : super(key: key);
+  @override
+  void initState() {
+    super.initState();
+    socketListenerCB();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +44,24 @@ class LoginPage extends StatelessWidget {
   void loginUser(BuildContext context) {
     if (userNameController.text.isEmpty) return;
 
-    User.init(userNameController.text);
+    SocketMethods().loginUser(userNameController.text);
+  }
+
+  void socketListenerCB() {
+    final socket = SocketClient.instance().socket!;
+
+    socket.on("loginSuccess", (data) {
+      enterLobby(data);
+    });
+  }
+
+  void enterLobby(dynamic data) {
+    print("data before lobby");
+    print(data);
     Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return const LobbyPage();
+      return LobbyPage(
+        info: data,
+      );
     }));
   }
 }

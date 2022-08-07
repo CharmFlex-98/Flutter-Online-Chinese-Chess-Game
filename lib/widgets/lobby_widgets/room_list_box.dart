@@ -1,19 +1,15 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
-import 'package:mobile_chinese_chess/client/game_lobby.dart';
-import 'package:mobile_chinese_chess/client/waiting_room.dart';
-import 'package:mobile_chinese_chess/client/web_socket_client.dart';
-import 'package:mobile_chinese_chess/widgets/waiting_room_widget.dart';
-import 'package:provider/provider.dart';
+import 'package:mobile_chinese_chess/client/socket_client.dart';
+import 'package:mobile_chinese_chess/client/socket_methods.dart';
+
+import '../../gameInfo/lobbyInfo.dart';
+import '../waiting_room_widget.dart';
 
 class RoomListBox extends StatefulWidget {
-  final GameLobby gameLobby;
-  final Stream stream;
-  const RoomListBox({required this.gameLobby, required this.stream, Key? key})
-      : super(key: key);
+  LobbyInfo lobbyInfo;
+  RoomListBox({required this.lobbyInfo, Key? key}) : super(key: key);
 
   @override
   State<RoomListBox> createState() => _RoomListBoxState();
@@ -24,7 +20,7 @@ class _RoomListBoxState extends State<RoomListBox> {
 
   @override
   void initState() {
-    streamCB();
+    socketListenerCB();
     super.initState();
   }
 
@@ -36,13 +32,18 @@ class _RoomListBoxState extends State<RoomListBox> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return ListView.builder(
-              itemCount: widget.gameLobby.rooms().length,
+              itemCount: widget.lobbyInfo.getRoomInfos().length,
               padding: const EdgeInsets.all(12),
               itemBuilder: (BuildContext context, int index) {
                 return roomInfoCard(
+                    roomID: widget.lobbyInfo
+                        .getRoomInfos()[index]["roomID"]
+                        .toString(),
                     cardHeight: constraints.maxHeight * _cardHeightRatio,
-                    owner: widget.gameLobby.rooms()[index].owner,
-                    publicRoom: true);
+                    owner: widget.lobbyInfo.getRoomInfos()[index]["owner"]
+                        ["username"],
+                    publicRoom: true,
+                    isFull: roomIsFull(widget.lobbyInfo.getRoomInfos()[index]));
               });
         },
       ),
@@ -51,8 +52,10 @@ class _RoomListBoxState extends State<RoomListBox> {
 
   Widget roomInfoCard(
       {required String owner,
+      required String roomID,
       required bool publicRoom,
-      required double cardHeight}) {
+      required double cardHeight,
+      required bool isFull}) {
     return Container(
       height: cardHeight,
       width: double.infinity,
@@ -78,9 +81,9 @@ class _RoomListBoxState extends State<RoomListBox> {
               padding: const EdgeInsets.all(3),
               child: TextButton(
                   onPressed: () {
-                    joinRoom(owner);
+                    if (!isFull) SocketMethods().joinRoom(roomID);
                   },
-                  child: const Text("JOIN")))
+                  child: isFull ? const Text("FULL") : const Text("JOIN")))
         ],
       ),
     );
@@ -94,18 +97,25 @@ class _RoomListBoxState extends State<RoomListBox> {
         child: Text(text));
   }
 
-  void streamCB() {
-    widget.stream.listen((event) {
-      dynamic info = jsonDecode(event);
-      if (widget.gameLobby.isTargetListener(info)) {
-        setState(() {
-          widget.gameLobby.update();
-        });
-      }
+  bool roomIsFull(dynamic roomInfo) {
+    return roomInfo["redPlayers"].length + roomInfo["blackPlayers"].length >= 2;
+  }
+
+  void socketListenerCB() {
+    final socket = SocketClient.instance().socket!;
+
+    socket.on("joinRoomSuccessed", (data) {
+      joinRoom(data);
+    });
+
+    socket.on("error", (_) {
+      Fluttertoast.showToast(msg: "Error! Could not join the room!");
     });
   }
 
-  void joinRoom(String owner) {
+  void joinRoom(data) {
+    print(data);
+    dynamic roomInfo = data["roomInfo"];
     showModalBottomSheet(
         context: context,
         clipBehavior: Clip.antiAlias,
@@ -114,9 +124,7 @@ class _RoomListBoxState extends State<RoomListBox> {
         ),
         builder: (context) {
           return WaitingRoomWidget(
-            stream: widget.stream,
-            waitingRoom: WaitingRoom(key: "roomInfo", owner: owner),
-            isOwner: false,
+            data: data,
           );
         });
   }

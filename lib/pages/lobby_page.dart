@@ -1,33 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
-import 'package:mobile_chinese_chess/client/game_lobby.dart';
-import 'package:mobile_chinese_chess/client/user.dart';
-import 'package:mobile_chinese_chess/client/waiting_room.dart';
-import 'package:mobile_chinese_chess/widgets/waiting_room_widget.dart';
-import 'package:mobile_chinese_chess/client/web_socket_client.dart';
+import 'package:mobile_chinese_chess/client/socket_client.dart';
+import 'package:mobile_chinese_chess/client/socket_methods.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
 import 'package:mobile_chinese_chess/widgets/lobby_widgets/lobbyStat.dart';
-import 'package:mobile_chinese_chess/widgets/lobby_widgets/room_list_box.dart';
-import 'package:provider/provider.dart';
+
+import '../gameInfo/lobbyInfo.dart';
+import '../widgets/lobby_widgets/room_list_box.dart';
+import '../widgets/waiting_room_widget.dart';
 
 class LobbyPage extends StatefulWidget {
-  const LobbyPage({Key? key}) : super(key: key);
+  dynamic info;
+  LobbyPage({required this.info, Key? key}) : super(key: key);
 
   @override
   State<LobbyPage> createState() => _LobbyPageState();
 }
 
 class _LobbyPageState extends State<LobbyPage> {
-  final GameLobby gameLobby = GameLobby(key: "roomList");
-  late Stream broadcastStream;
+  LobbyInfo lobbyInfo = LobbyInfo();
 
   @override
   void initState() {
-    WebSocketClient.init();
-    broadcastStream = WebSocketClient.channel().stream.asBroadcastStream();
-    WebSocketClient.send("refresh lobby");
     super.initState();
+    print("login info is");
+    print(widget.info);
+    lobbyInfo.updateInfo(widget.info);
+    socketListenerCB();
   }
 
   @override
@@ -43,15 +43,17 @@ class _LobbyPageState extends State<LobbyPage> {
             createLobbyBtn(),
             Expanded(
                 child: RoomListBox(
-              gameLobby: gameLobby,
-              stream: broadcastStream,
+              lobbyInfo: lobbyInfo,
             ))
           ],
         ));
   }
 
-  void createRoom() {
+  void createRoom(dynamic data) {
+    print("at create room");
+    print(data);
     showModalBottomSheet(
+        isDismissible: false,
         context: context,
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
@@ -59,16 +61,14 @@ class _LobbyPageState extends State<LobbyPage> {
         ),
         builder: (context) {
           return WaitingRoomWidget(
-            stream: broadcastStream,
-            waitingRoom: WaitingRoom(key: "roomInfo", owner: User.getUserId()),
+            data: data,
           );
         });
-    WebSocketClient.send("create room");
   }
 
   Widget createLobbyBtn() {
     return GestureDetector(
-      onTap: createRoom,
+      onTap: SocketMethods().createRoom,
       child: Container(
         margin: const EdgeInsets.all(8),
         alignment: Alignment.center,
@@ -84,10 +84,31 @@ class _LobbyPageState extends State<LobbyPage> {
     );
   }
 
-  void newPlayerJoinNotification() {
-    Fluttertoast.cancel();
-    Fluttertoast.showToast(msg: "New player joined!");
+  void socketListenerCB() {
+    final socket = SocketClient.instance().socket!;
+
+    socket.on("refreshLobby", (data) {
+      if (data["onlinePlayers"] != null) {
+      } else if (data["lobbyInfo"] != null) {
+        setState(() {
+          lobbyInfo.updateInfo(data);
+        });
+      }
+    });
+
+    socket.on("createRoomSuccessed", (data) {
+      createRoom(data);
+    });
+
+    socket.on("error", (data) {
+      Fluttertoast.showToast(
+          msg: "failing to create room! Check your connection!");
+    });
   }
+
+  // void createRoom() {
+
+  // }
 
   // void enterGame() {
   //   Navigator.push(context, MaterialPageRoute(builder: (context) {
