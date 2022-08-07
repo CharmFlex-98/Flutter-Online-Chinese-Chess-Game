@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
 import 'package:mobile_chinese_chess/client/socket_client.dart';
+import 'package:mobile_chinese_chess/client/socket_methods.dart';
 import 'package:mobile_chinese_chess/gameInfo/roomInfo.dart';
+import 'package:mobile_chinese_chess/gameInfo/userInfo.dart';
+import 'package:mobile_chinese_chess/game_manager.dart';
+import 'package:mobile_chinese_chess/pages/in_game_page.dart';
 
 class WaitingRoomWidget extends StatefulWidget {
   dynamic data;
@@ -55,7 +59,10 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
                   Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: ElevatedButton(
-                        onPressed: () {}, child: const Text("Ready")),
+                        onPressed: () {
+                          SocketMethods().ready(roomID: roomInfo.roomID!);
+                        },
+                        child: const Text("Ready")),
                   )
                 ],
               ),
@@ -122,10 +129,6 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
     Navigator.of(context).pop();
   }
 
-  void ready() {
-    // WebSocketClient.send("ready");
-  }
-
   void socketClientCB() {
     final socket = SocketClient.instance().socket!;
 
@@ -133,15 +136,27 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
       print("someone joined");
       updateRoomStatus(data);
     });
+
+    socket.on("enterGame", (data) {
+      if (roomInfo.playerInRedTeam(UserInfo.username)) {
+        GameManager.init(isRedTeam: true);
+      } else {
+        GameManager.init(isRedTeam: false);
+      }
+      enterGame();
+    });
   }
 
   void updateRoomStatus(data) {
     setState(() {
       roomInfo.updateInfo(data);
-      print("after update info");
-      print(roomInfo.redPlayers);
-      print(roomInfo.blackPlayers);
     });
+  }
+
+  void enterGame() {
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return const InGamePage();
+    }));
   }
 
   // void streamCB() {

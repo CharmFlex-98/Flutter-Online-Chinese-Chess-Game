@@ -8,6 +8,7 @@ enum RoomStatus {
 }
 
 class RoomInfo extends Info {
+  String? roomID;
   List<String> redPlayers = [];
   List<String> blackPlayers = [];
   RoomStatus roomStatus = RoomStatus.allNotReady;
@@ -21,6 +22,8 @@ class RoomInfo extends Info {
   void updateInfo(data) {
     dynamic roomInfo = data[keyword()];
 
+    roomID = roomInfo["roomID"].toString();
+
     redPlayers.clear();
     for (dynamic r in roomInfo["redPlayers"]) {
       redPlayers.add(r["username"] as String);
@@ -30,5 +33,9 @@ class RoomInfo extends Info {
     for (dynamic b in roomInfo["blackPlayers"]) {
       blackPlayers.add(b["username"] as String);
     }
+  }
+
+  bool playerInRedTeam(String username) {
+    return redPlayers.contains(username);
   }
 }

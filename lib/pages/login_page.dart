@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
 import 'package:mobile_chinese_chess/client/socket_client.dart';
 import 'package:mobile_chinese_chess/client/socket_methods.dart';
+import 'package:mobile_chinese_chess/gameInfo/userInfo.dart';
 import 'package:mobile_chinese_chess/pages/lobby_page.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
 
@@ -51,6 +52,7 @@ class _LoginPageState extends State<LoginPage> {
     final socket = SocketClient.instance().socket!;
 
     socket.on("loginSuccess", (data) {
+      UserInfo.initUser(data["username"]);
       enterLobby(data);
     });
   }
