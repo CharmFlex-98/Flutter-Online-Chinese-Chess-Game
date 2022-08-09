@@ -27,8 +27,11 @@ class GameManager {
     _isRedTurn = false;
   }
 
-  static Point boardPointConvert(Point pointFrom, {bool needToConvert = true}) {
-    return needToConvert ? Point(pointFrom.x, pointFrom.y) : pointFrom;
+  static Point boardPointConvert(Point pointFrom) {
+    int x = boardPointXConvert(pointFrom.x);
+    int y = boardPointYConvert(pointFrom.y);
+
+    return Point(x, y);
   }
 
   static int boardPointXConvert(int pointX) {

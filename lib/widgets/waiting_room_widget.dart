@@ -22,6 +22,7 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
 
   @override
   void initState() {
+    print("init waiting room");
     super.initState();
     print("room data is");
     print(widget.data);
@@ -132,7 +133,7 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
   void socketClientCB() {
     final socket = SocketClient.instance().socket!;
 
-    socket.on("joinRoomSuccessed", (data) {
+    socket.on("opponentJoined", (data) {
       print("someone joined");
       updateRoomStatus(data);
     });
@@ -155,7 +156,7 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
 
   void enterGame() {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return const InGamePage();
+      return InGamePage(roomInfo: roomInfo);
     }));
   }
 

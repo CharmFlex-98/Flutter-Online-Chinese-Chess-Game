@@ -25,4 +25,21 @@ class SocketMethods {
       roomID,
     );
   }
+
+  void move(
+      {required String roomID,
+      required int prevX,
+      required int currX,
+      required int prevY,
+      required int currY}) {
+    socketClient.emit("move", {
+      "roomID": roomID,
+      "moveData": {
+        "prevX": prevX,
+        "currX": currX,
+        "prevY": prevY,
+        "currY": currY,
+      }
+    });
+  }
 }

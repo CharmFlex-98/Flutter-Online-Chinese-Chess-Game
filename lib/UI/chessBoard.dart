@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_chinese_chess/client/socket_client.dart';
 import 'package:mobile_chinese_chess/game_manager.dart';
 import 'package:mobile_chinese_chess/piece_model/canon.dart';
 import 'package:mobile_chinese_chess/piece_model/elephant.dart';
@@ -9,6 +10,7 @@ import 'package:mobile_chinese_chess/piece_model/piece.dart';
 import 'package:mobile_chinese_chess/piece_model/rook.dart';
 import 'package:mobile_chinese_chess/piece_model/soldier.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
+import 'package:socket_io_client/socket_io_client.dart';
 
 class ChessBoard extends StatefulWidget {
   final BoxConstraints constraints;
@@ -17,8 +19,11 @@ class ChessBoard extends StatefulWidget {
   late final double xOffset;
   late final double yOffset;
   late final List<Piece> pieces;
+  final Function chessMoveCallback;
 
-  ChessBoard(this.constraints, {Key? key}) : super(key: key) {
+  ChessBoard(
+      {required this.chessMoveCallback, required this.constraints, Key? key})
+      : super(key: key) {
     pieces = initPiecesPos(GameManager.isRedTeam());
     initBoardDim();
   }
@@ -136,8 +141,37 @@ class _ChessBoardState extends State<ChessBoard> {
 
   @override
   void initState() {
+    print("initstate");
     super.initState();
     initBoard();
+    socketListenerCB();
+  }
+
+  void socketListenerCB() {
+    Socket socket = SocketClient.instance().socket!;
+    print("listener");
+
+    socket.on("playerMove", (moveData) {
+      print(moveData);
+      Point prevPoint = GameManager.boardPointConvert(Point(
+        moveData["prevX"],
+        moveData["prevY"],
+      ));
+      Point currPoint = GameManager.boardPointConvert(Point(
+        moveData["currX"],
+        moveData["currY"],
+      ));
+
+      print("${prevPoint.y}   ${currPoint.y}");
+
+      Piece? selectedPiece = board[prevPoint.x][prevPoint.y];
+      print(selectedPiece);
+      if (selectedPiece != null) {
+        setState(() {
+          move(board, selectedPiece, prevPoint, currPoint);
+        });
+      }
+    });
   }
 
   @override
@@ -207,17 +241,25 @@ class _ChessBoardState extends State<ChessBoard> {
 
     for (Point point in _selectedPiece!.possibleKillPoint(board)) {
       if (piece.currentPoint.x == point.x && piece.currentPoint.y == point.y) {
-        board[piece.currentPoint.x][piece.currentPoint.y] = _selectedPiece;
-        board[_selectedPiece!.currentPoint.x][_selectedPiece!.currentPoint.y] =
-            null;
-        _selectedPiece!.move(Point(piece.currentPoint.x, piece.currentPoint.y));
-        postManipulationProcess();
+        int prevX = _selectedPiece!.currentPoint.x;
+        int prevY = _selectedPiece!.currentPoint.y;
+
+        move(board, _selectedPiece!, Point(prevX, prevY),
+            Point(piece.currentPoint.x, piece.currentPoint.y));
+        postManipulationProcess(
+            prevX: prevX,
+            currX: piece.currentPoint.x,
+            prevY: prevY,
+            currY: piece.currentPoint.y);
         break;
       }
     }
   }
 
   void selectPiece(Piece piece) {
+    // if the piece is not your fucking piece
+    if (piece.isRed != GameManager.isRedTeam()) return;
+
     if (_selectedPiece == piece) {
       deselectPiece();
       return;
@@ -247,11 +289,17 @@ class _ChessBoardState extends State<ChessBoard> {
     return remainingPieces;
   }
 
-  void postManipulationProcess() {
+  void postManipulationProcess(
+      {required int prevX,
+      required int currX,
+      required int prevY,
+      required int currY}) {
+    print("in post");
     moveBoundingBoxes = [];
     killBoundingBoxes = [];
     _selectedPiece = null;
-    GameManager.changeTurn();
+    widget.chessMoveCallback(
+        prevX: prevX, currX: currX, prevY: prevY, currY: currY);
 
     if (checkIfGameEnd(GameManager.isRedTurn())) {
       GameManager.endGame(redWin: !GameManager.isRedTurn());
@@ -299,13 +347,25 @@ class _ChessBoardState extends State<ChessBoard> {
   }
 
   void movePiece(Piece piece, Point toPoint) {
-    Point initialPoint = piece.currentPoint;
+    int prevX = piece.currentPoint.x;
+    int prevY = piece.currentPoint.y;
 
-    board[initialPoint.x][initialPoint.y] = null;
+    move(board, piece, Point(prevX, prevY), toPoint);
+
+    postManipulationProcess(
+        prevX: prevX,
+        currX: piece.currentPoint.x,
+        prevY: prevY,
+        currY: piece.currentPoint.y);
+  }
+
+  void move(
+      List<List<Piece?>> board, Piece piece, Point fromPoint, Point toPoint) {
+    board[fromPoint.x][fromPoint.y] = null;
     board[toPoint.x][toPoint.y] = piece;
     piece.move(toPoint);
-
-    postManipulationProcess();
+    GameManager.changeTurn();
+    print(GameManager.isRedTurn());
   }
 
   double getXPos(Piece piece, {int? xIndex}) {
