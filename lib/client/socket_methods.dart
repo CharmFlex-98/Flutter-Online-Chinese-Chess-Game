@@ -19,6 +19,10 @@ class SocketMethods {
     socketClient.emit("joinRoom", roomID);
   }
 
+  void leaveRoom(String roomID) {
+    socketClient.emit("leaveRoom", roomID);
+  }
+
   void ready({required String roomID}) {
     socketClient.emit(
       "ready",

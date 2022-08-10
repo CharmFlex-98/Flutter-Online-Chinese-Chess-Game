@@ -55,7 +55,11 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
                   Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: ElevatedButton(
-                        onPressed: leaveRoom, child: const Text("Leave Room")),
+                        onPressed: () {
+                          print("pressed leave");
+                          SocketMethods().leaveRoom(roomInfo.roomID!);
+                        },
+                        child: const Text("Leave Room")),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(12.0),
@@ -125,9 +129,14 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
     );
   }
 
-  void leaveRoom() {
-    // WebSocketClient.send("leave room");
-    Navigator.of(context).pop();
+  @override
+  void dispose() {
+    final socket = SocketClient.instance().socket!;
+    socket.off("opponentJoined");
+    socket.off("opponentLeaved");
+    socket.off("leaveRoomSuccessed");
+    socket.off("enterGame");
+    super.dispose();
   }
 
   void socketClientCB() {
@@ -136,6 +145,16 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
     socket.on("opponentJoined", (data) {
       print("someone joined");
       updateRoomStatus(data);
+    });
+
+    socket.on("opponentLeaved", (data) {
+      print("opponent leaved");
+      updateRoomStatus(data);
+    });
+
+    socket.on("leaveRoomSuccessed", (_) {
+      print("leaved");
+      Navigator.pop(context);
     });
 
     socket.on("enterGame", (data) {

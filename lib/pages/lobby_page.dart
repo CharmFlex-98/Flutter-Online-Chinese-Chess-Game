@@ -4,7 +4,7 @@ import 'package:mobile_chinese_chess/UI/game_ui.dart';
 import 'package:mobile_chinese_chess/client/socket_client.dart';
 import 'package:mobile_chinese_chess/client/socket_methods.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
-import 'package:mobile_chinese_chess/widgets/lobby_widgets/lobbyStat.dart';
+import 'package:mobile_chinese_chess/widgets/lobby_widgets/notification_banner.dart';
 
 import '../gameInfo/lobbyInfo.dart';
 import '../widgets/lobby_widgets/room_list_box.dart';
@@ -39,7 +39,7 @@ class _LobbyPageState extends State<LobbyPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            const LobbyStat(),
+            const NotificationBanner(),
             createLobbyBtn(),
             Expanded(
                 child: RoomListBox(
