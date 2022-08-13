@@ -1,4 +1,4 @@
-import 'package:mobile_chinese_chess/gameInfo/info.dart';
+import 'package:mobile_chinese_chess/info/info.dart';
 
 enum RoomStatus {
   allNotReady,
@@ -33,6 +33,8 @@ class RoomInfo extends Info {
     for (dynamic b in roomInfo["blackPlayers"]) {
       blackPlayers.add(b["username"] as String);
     }
+
+    notifyListeners();
   }
 
   bool playerInRedTeam(String username) {

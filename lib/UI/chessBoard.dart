@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_chinese_chess/client/socket_client.dart';
+import 'package:mobile_chinese_chess/client/constants.dart';
+import 'package:mobile_chinese_chess/client/socket_methods.dart';
 import 'package:mobile_chinese_chess/game_manager.dart';
+import 'package:mobile_chinese_chess/info/opponentMoveInfo.dart';
+import 'package:mobile_chinese_chess/info/roomInfo.dart';
 import 'package:mobile_chinese_chess/piece_model/canon.dart';
 import 'package:mobile_chinese_chess/piece_model/elephant.dart';
 import 'package:mobile_chinese_chess/piece_model/guide.dart';
@@ -10,7 +13,7 @@ import 'package:mobile_chinese_chess/piece_model/piece.dart';
 import 'package:mobile_chinese_chess/piece_model/rook.dart';
 import 'package:mobile_chinese_chess/piece_model/soldier.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
-import 'package:socket_io_client/socket_io_client.dart';
+import 'package:provider/provider.dart';
 
 class ChessBoard extends StatefulWidget {
   final BoxConstraints constraints;
@@ -19,11 +22,8 @@ class ChessBoard extends StatefulWidget {
   late final double xOffset;
   late final double yOffset;
   late final List<Piece> pieces;
-  final Function chessMoveCallback;
 
-  ChessBoard(
-      {required this.chessMoveCallback, required this.constraints, Key? key})
-      : super(key: key) {
+  ChessBoard({required this.constraints, Key? key}) : super(key: key) {
     pieces = initPiecesPos(GameManager.isRedTeam());
     initBoardDim();
   }
@@ -144,34 +144,27 @@ class _ChessBoardState extends State<ChessBoard> {
     print("initstate");
     super.initState();
     initBoard();
-    socketListenerCB();
+    SocketMethods().playerMoveListener(context, opponentMove);
   }
 
-  void socketListenerCB() {
-    Socket socket = SocketClient.instance().socket!;
-    print("listener");
+  @override
+  void dispose() {
+    SocketMethods().disposeListeners([playerMove]);
+    super.dispose();
+  }
 
-    socket.on("playerMove", (moveData) {
-      print(moveData);
-      Point prevPoint = GameManager.boardPointConvert(Point(
-        moveData["prevX"],
-        moveData["prevY"],
-      ));
-      Point currPoint = GameManager.boardPointConvert(Point(
-        moveData["currX"],
-        moveData["currY"],
-      ));
+  void opponentMove(OpponentMoveInfo moveInfo) {
+    Point? prevPoint = moveInfo.prevPoint;
+    Point? currPoint = moveInfo.currPoint;
 
-      print("${prevPoint.y}   ${currPoint.y}");
-
+    if (prevPoint != null && currPoint != null) {
       Piece? selectedPiece = board[prevPoint.x][prevPoint.y];
-      print(selectedPiece);
       if (selectedPiece != null) {
         setState(() {
           move(board, selectedPiece, prevPoint, currPoint);
         });
       }
-    });
+    }
   }
 
   @override
@@ -294,12 +287,17 @@ class _ChessBoardState extends State<ChessBoard> {
       required int currX,
       required int prevY,
       required int currY}) {
+    RoomInfo roomInfo = Provider.of<RoomInfo>(context, listen: false);
     print("in post");
     moveBoundingBoxes = [];
     killBoundingBoxes = [];
     _selectedPiece = null;
-    widget.chessMoveCallback(
-        prevX: prevX, currX: currX, prevY: prevY, currY: currY);
+    SocketMethods().move(
+        roomID: roomInfo.roomID!,
+        prevX: prevX,
+        currX: currX,
+        prevY: prevY,
+        currY: currY);
 
     if (checkIfGameEnd(GameManager.isRedTurn())) {
       GameManager.endGame(redWin: !GameManager.isRedTurn());

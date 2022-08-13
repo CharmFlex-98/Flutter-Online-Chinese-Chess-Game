@@ -1,37 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
-import 'package:mobile_chinese_chess/client/socket_client.dart';
+import 'package:mobile_chinese_chess/client/constants.dart';
 import 'package:mobile_chinese_chess/client/socket_methods.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
 import 'package:mobile_chinese_chess/widgets/lobby_widgets/notification_banner.dart';
+import 'package:provider/provider.dart';
 
-import '../gameInfo/lobbyInfo.dart';
+import '../info/lobbyInfo.dart';
 import '../widgets/lobby_widgets/room_list_box.dart';
-import '../widgets/waiting_room_widget.dart';
 
 class LobbyPage extends StatefulWidget {
-  dynamic info;
-  LobbyPage({required this.info, Key? key}) : super(key: key);
+  const LobbyPage({Key? key}) : super(key: key);
 
   @override
   State<LobbyPage> createState() => _LobbyPageState();
 }
 
 class _LobbyPageState extends State<LobbyPage> {
-  LobbyInfo lobbyInfo = LobbyInfo();
-
   @override
   void initState() {
     super.initState();
-    print("login info is");
-    print(widget.info);
-    lobbyInfo.updateInfo(widget.info);
-    socketListenerCB();
+    SocketMethods methods = SocketMethods();
+    methods.refreshLobbyListener(context);
+    methods.createRoomSuccessedListener(context);
+    methods.createRoomErrorListener();
+  }
+
+  @override
+  void dispose() {
+    SocketMethods()
+        .disposeListeners([refreshLobby, createRoomSuccessed, createRoomError]);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    print("build lobby");
+    LobbyInfo lobbyInfo = Provider.of<LobbyInfo>(context);
+    print(lobbyInfo);
+
     return Scaffold(
         backgroundColor: mC,
         appBar: AppBar(title: const Text("Mobile Chinese Chess Game")),
@@ -47,23 +54,6 @@ class _LobbyPageState extends State<LobbyPage> {
             ))
           ],
         ));
-  }
-
-  void createRoom(dynamic data) {
-    print("at create room");
-    print(data);
-    showModalBottomSheet(
-        isDismissible: false,
-        context: context,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        builder: (context) {
-          return WaitingRoomWidget(
-            data: data,
-          );
-        });
   }
 
   Widget createLobbyBtn() {
@@ -83,57 +73,4 @@ class _LobbyPageState extends State<LobbyPage> {
       ),
     );
   }
-
-  void socketListenerCB() {
-    final socket = SocketClient.instance().socket!;
-
-    socket.on("refreshLobby", (data) {
-      if (data["onlinePlayers"] != null) {
-      } else if (data["lobbyInfo"] != null) {
-        setState(() {
-          lobbyInfo.updateInfo(data);
-        });
-      }
-    });
-
-    socket.on("createRoomSuccessed", (data) {
-      createRoom(data);
-    });
-
-    socket.on("error", (data) {
-      Fluttertoast.showToast(
-          msg: "failing to create room! Check your connection!");
-    });
-  }
-
-  // void createRoom() {
-
-  // }
-
-  // void enterGame() {
-  //   Navigator.push(context, MaterialPageRoute(builder: (context) {
-  //     return const InGamePage();
-  //   }));
-  // }
-
-  // Player createPlayer(String playerId, {bool isRedTeam = true}) {
-  //   GameManager.init(isRedTeam: isRedTeam);
-  //   Player player = Player(playerId);
-
-  //   return player;
-  // }
-
-  // // just for testing
-  // Room createRoom(String roomId) {
-  //   Room room = Room(roomId);
-
-  //   return room;
-  // }
-
-  // void initializeGame(String playerId, String roomId, {bool isRedTeam = true}) {
-  //   Player player = createPlayer(playerId, isRedTeam: isRedTeam);
-  //   Room room = createRoom(roomId);
-
-  //   room.join(player);
-  // }
 }

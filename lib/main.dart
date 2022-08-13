@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
+import 'package:mobile_chinese_chess/info/lobbyInfo.dart';
+import 'package:mobile_chinese_chess/info/roomInfo.dart';
 import 'package:mobile_chinese_chess/pages/login_page.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,13 +15,19 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      color: mC,
-      title: 'Mobile Chinese Chess',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => LobbyInfo()),
+        ChangeNotifierProvider(create: (_) => RoomInfo())
+      ],
+      child: MaterialApp(
+        color: mC,
+        title: 'Mobile Chinese Chess',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: const LoginPage(),
       ),
-      home: const LoginPage(),
     );
   }
 }

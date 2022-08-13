@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
-import 'package:mobile_chinese_chess/client/socket_client.dart';
+import 'package:mobile_chinese_chess/client/constants.dart';
 import 'package:mobile_chinese_chess/client/socket_methods.dart';
-import 'package:mobile_chinese_chess/gameInfo/userInfo.dart';
-import 'package:mobile_chinese_chess/pages/lobby_page.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
 
 class LoginPage extends StatefulWidget {
@@ -19,7 +17,13 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    socketListenerCB();
+    SocketMethods().loginSucessedListener(context);
+  }
+
+  @override
+  void dispose() {
+    SocketMethods().disposeListeners([loginSuccessed]);
+    super.dispose();
   }
 
   @override
@@ -46,24 +50,5 @@ class _LoginPageState extends State<LoginPage> {
     if (userNameController.text.isEmpty) return;
 
     SocketMethods().loginUser(userNameController.text);
-  }
-
-  void socketListenerCB() {
-    final socket = SocketClient.instance().socket!;
-
-    socket.on("loginSuccess", (data) {
-      UserInfo.initUser(data["username"]);
-      enterLobby(data);
-    });
-  }
-
-  void enterLobby(dynamic data) {
-    print("data before lobby");
-    print(data);
-    Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return LobbyPage(
-        info: data,
-      );
-    }));
   }
 }

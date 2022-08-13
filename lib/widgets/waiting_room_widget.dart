@@ -1,37 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
-import 'package:mobile_chinese_chess/client/socket_client.dart';
+import 'package:mobile_chinese_chess/client/constants.dart';
 import 'package:mobile_chinese_chess/client/socket_methods.dart';
-import 'package:mobile_chinese_chess/gameInfo/roomInfo.dart';
-import 'package:mobile_chinese_chess/gameInfo/userInfo.dart';
-import 'package:mobile_chinese_chess/game_manager.dart';
-import 'package:mobile_chinese_chess/pages/in_game_page.dart';
+import 'package:mobile_chinese_chess/info/roomInfo.dart';
+import 'package:provider/provider.dart';
 
 class WaitingRoomWidget extends StatefulWidget {
-  dynamic data;
-
-  WaitingRoomWidget({required this.data, Key? key}) : super(key: key);
+  const WaitingRoomWidget({Key? key}) : super(key: key);
 
   @override
   State<WaitingRoomWidget> createState() => _WaitingRoomWidgetState();
 }
 
 class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
-  RoomInfo roomInfo = RoomInfo();
   bool _chooseRed = true;
 
   @override
   void initState() {
-    print("init waiting room");
     super.initState();
-    print("room data is");
-    print(widget.data);
-    roomInfo.updateInfo(widget.data);
-    socketClientCB();
+    SocketMethods methods = SocketMethods();
+    methods.opponentJoinedListener(context);
+    methods.opponentLeavedListener(context);
+    methods.leaveRoomSuccessedListener(context);
+    methods.enterGameListener(context);
+  }
+
+  @override
+  void dispose() {
+    SocketMethods().disposeListeners(
+        [opponentJoined, opponentLeaved, leaveRoomSuccessed, enterGame]);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    RoomInfo roomInfo = Provider.of<RoomInfo>(context);
+
+    print(roomInfo);
+
     return LayoutBuilder(
       builder: (buildContext, constraints) {
         return Column(
@@ -128,64 +134,4 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
       ),
     );
   }
-
-  @override
-  void dispose() {
-    final socket = SocketClient.instance().socket!;
-    socket.off("opponentJoined");
-    socket.off("opponentLeaved");
-    socket.off("leaveRoomSuccessed");
-    socket.off("enterGame");
-    super.dispose();
-  }
-
-  void socketClientCB() {
-    final socket = SocketClient.instance().socket!;
-
-    socket.on("opponentJoined", (data) {
-      print("someone joined");
-      updateRoomStatus(data);
-    });
-
-    socket.on("opponentLeaved", (data) {
-      print("opponent leaved");
-      updateRoomStatus(data);
-    });
-
-    socket.on("leaveRoomSuccessed", (_) {
-      print("leaved");
-      Navigator.pop(context);
-    });
-
-    socket.on("enterGame", (data) {
-      if (roomInfo.playerInRedTeam(UserInfo.username)) {
-        GameManager.init(isRedTeam: true);
-      } else {
-        GameManager.init(isRedTeam: false);
-      }
-      enterGame();
-    });
-  }
-
-  void updateRoomStatus(data) {
-    setState(() {
-      roomInfo.updateInfo(data);
-    });
-  }
-
-  void enterGame() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return InGamePage(roomInfo: roomInfo);
-    }));
-  }
-
-  // void streamCB() {
-  //   widget.stream.listen((event) {
-  //     if (widget.waitingRoom.isTargetListener(jsonDecode(event))) {
-  //       setState(() {
-  //         widget.waitingRoom.update();
-  //       });
-  //     }
-  //   });
-  // }
 }

@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
-import 'package:mobile_chinese_chess/client/socket_client.dart';
 import 'package:mobile_chinese_chess/client/socket_methods.dart';
 
-import '../../gameInfo/lobbyInfo.dart';
-import '../waiting_room_widget.dart';
+import '../../info/lobbyInfo.dart';
 
 class RoomListBox extends StatefulWidget {
   LobbyInfo lobbyInfo;
@@ -20,8 +17,9 @@ class _RoomListBoxState extends State<RoomListBox> {
 
   @override
   void initState() {
-    socketListenerCB();
     super.initState();
+    SocketMethods().joinRoomSuccessedListener(context);
+    SocketMethods().joinRoomErrorListener();
   }
 
   @override
@@ -99,33 +97,5 @@ class _RoomListBoxState extends State<RoomListBox> {
 
   bool roomIsFull(dynamic roomInfo) {
     return roomInfo["redPlayers"].length + roomInfo["blackPlayers"].length >= 2;
-  }
-
-  void socketListenerCB() {
-    final socket = SocketClient.instance().socket!;
-
-    socket.on("joinRoomSuccessed", (data) {
-      joinRoom(data);
-    });
-
-    socket.on("error", (_) {
-      Fluttertoast.showToast(msg: "Error! Could not join the room!");
-    });
-  }
-
-  void joinRoom(data) {
-    print(data);
-    dynamic roomInfo = data["roomInfo"];
-    showModalBottomSheet(
-        context: context,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        builder: (context) {
-          return WaitingRoomWidget(
-            data: data,
-          );
-        });
   }
 }

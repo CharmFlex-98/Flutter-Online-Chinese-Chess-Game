@@ -6,6 +6,7 @@ class LobbyInfo extends Info {
   @override
   void updateInfo(data) {
     _roomInfos = data[keyword()];
+    notifyListeners();
   }
 
   List<dynamic> getRoomInfos() {
