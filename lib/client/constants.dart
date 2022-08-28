@@ -6,9 +6,10 @@ String createRoomError = "createRoomError";
 String joinRoomSuccessed = "joinRoomSuccessed";
 String joinRoomError = "joinRoomError";
 
-String opponentJoined = "opponentJoined";
-String opponentLeaved = "opponentLeaved";
+String roomStatusChanged = "roomStatusChanged";
 String leaveRoomSuccessed = "leaveRoomSuccessed";
 String enterGame = "enterGame";
 
 String playerMove = "playerMove";
+String gameStatusChanged = "gameStatusChanged";
+String opponentLeftGame = "opponentLeftGame";

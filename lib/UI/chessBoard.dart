@@ -126,6 +126,7 @@ class _ChessBoardState extends State<ChessBoard> {
   List<CustomPaint> killBoundingBoxes = [];
 
   void initBoard() {
+    print("init");
     const row = 10;
     const column = 9;
     board =
@@ -134,6 +135,7 @@ class _ChessBoardState extends State<ChessBoard> {
     for (Piece piece in widget.pieces) {
       final x = piece.initialPoint.x;
       final y = piece.initialPoint.y;
+      piece.currentPoint = Point(x, y);
 
       board[x][y] = piece;
     }
@@ -145,12 +147,22 @@ class _ChessBoardState extends State<ChessBoard> {
     super.initState();
     initBoard();
     SocketMethods().playerMoveListener(context, opponentMove);
+    SocketMethods().gameStatusChangedListener(context, restart);
+    SocketMethods().opponentLeftGameListener(context);
   }
 
   @override
   void dispose() {
-    SocketMethods().disposeListeners([playerMove]);
+    SocketMethods()
+        .disposeListeners([playerMove, gameStatusChanged, opponentLeftGame]);
     super.dispose();
+  }
+
+  void restart() {
+    GameManager.restartGame();
+    setState(() {
+      initBoard();
+    });
   }
 
   void opponentMove(OpponentMoveInfo moveInfo) {
@@ -195,11 +207,6 @@ class _ChessBoardState extends State<ChessBoard> {
       for (Piece piece in piecesOnBoard()) positionPiece(piece),
       ...moveBoundingBoxes,
       ...killBoundingBoxes,
-      GameManager.gameIsEnd()
-          ? Container(
-              color: GameManager.win() ? Colors.green : Colors.red,
-              child: Text(GameManager.win() ? "You win!" : "You lose!"))
-          : const SizedBox(),
     ]);
   }
 
@@ -301,6 +308,8 @@ class _ChessBoardState extends State<ChessBoard> {
 
     if (checkIfGameEnd(GameManager.isRedTurn())) {
       GameManager.endGame(redWin: !GameManager.isRedTurn());
+      RoomInfo roomInfo = Provider.of<RoomInfo>(context, listen: false);
+      SocketMethods().endGame(roomInfo.roomID!, GameManager.win());
     }
   }
 

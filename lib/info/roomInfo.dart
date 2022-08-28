@@ -20,24 +20,53 @@ class RoomInfo extends Info {
 
   @override
   void updateInfo(data) {
+    print("update info");
     dynamic roomInfo = data[keyword()];
 
-    roomID = roomInfo["roomID"].toString();
-
-    redPlayers.clear();
-    for (dynamic r in roomInfo["redPlayers"]) {
-      redPlayers.add(r["username"] as String);
-    }
-
-    blackPlayers.clear();
-    for (dynamic b in roomInfo["blackPlayers"]) {
-      blackPlayers.add(b["username"] as String);
-    }
+    _setRoomID(roomInfo);
+    _setRedPlayers(roomInfo);
+    _setBlackPlayers(roomInfo);
+    _setRoomStatus(roomInfo);
 
     notifyListeners();
   }
 
   bool playerInRedTeam(String username) {
     return redPlayers.contains(username);
+  }
+
+  void _setRoomID(dynamic roomInfo) {
+    roomID = roomInfo["roomID"].toString();
+  }
+
+  void _setRedPlayers(dynamic roomInfo) {
+    redPlayers.clear();
+    for (dynamic r in roomInfo["redPlayers"]) {
+      redPlayers.add(r["username"] as String);
+    }
+  }
+
+  void _setBlackPlayers(dynamic roomInfo) {
+    blackPlayers.clear();
+    for (dynamic b in roomInfo["blackPlayers"]) {
+      blackPlayers.add(b["username"] as String);
+    }
+  }
+
+  void _setRoomStatus(dynamic roomInfo) {
+    int index = roomInfo["roomStatus"];
+    if (index == 0) {
+      roomStatus = RoomStatus.allNotReady;
+    } else if (index == 1) {
+      roomStatus = RoomStatus.redReady;
+    } else if (index == 2) {
+      roomStatus = RoomStatus.blackReady;
+    } else if (index == 3) {
+      roomStatus = RoomStatus.allReady;
+    }
+  }
+
+  void resetRoomStatus() {
+    roomStatus = RoomStatus.allNotReady;
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
 import 'package:mobile_chinese_chess/client/constants.dart';
 import 'package:mobile_chinese_chess/client/socket_methods.dart';
+import 'package:mobile_chinese_chess/game_manager.dart';
 import 'package:mobile_chinese_chess/info/roomInfo.dart';
 import 'package:provider/provider.dart';
 
@@ -19,16 +20,13 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
   void initState() {
     super.initState();
     SocketMethods methods = SocketMethods();
-    methods.opponentJoinedListener(context);
-    methods.opponentLeavedListener(context);
+    methods.roomStatusChangedListener(context);
     methods.leaveRoomSuccessedListener(context);
-    methods.enterGameListener(context);
   }
 
   @override
   void dispose() {
-    SocketMethods().disposeListeners(
-        [opponentJoined, opponentLeaved, leaveRoomSuccessed, enterGame]);
+    SocketMethods().disposeListeners([roomStatusChanged, leaveRoomSuccessed]);
     super.dispose();
   }
 
@@ -36,24 +34,33 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
   Widget build(BuildContext context) {
     RoomInfo roomInfo = Provider.of<RoomInfo>(context);
 
-    print(roomInfo);
-
+    // if all players are ready, we need to enter game.
+    // start a future method here
+    if (roomInfo.roomStatus == RoomStatus.allReady) {
+      Future.microtask(() {
+        enterGame();
+      });
+    }
     return LayoutBuilder(
       builder: (buildContext, constraints) {
         return Column(
           children: [
             waitingRoomCard(
-              constraints: constraints,
-              title: "RED",
-              playerName:
-                  roomInfo.redPlayers.isNotEmpty ? roomInfo.redPlayers[0] : "",
-            ),
+                constraints: constraints,
+                title: "RED",
+                playerName: roomInfo.redPlayers.isNotEmpty
+                    ? roomInfo.redPlayers[0]
+                    : "",
+                playerReady:
+                    isReady(roomInfo: roomInfo, isRed: true) ? true : false),
             waitingRoomCard(
                 constraints: constraints,
                 title: "BLACK",
                 playerName: roomInfo.blackPlayers.isNotEmpty
                     ? roomInfo.blackPlayers[0]
-                    : ""),
+                    : "",
+                playerReady:
+                    isReady(roomInfo: roomInfo, isRed: false) ? true : false),
             Expanded(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -84,10 +91,25 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
     );
   }
 
+  bool isReady({required RoomInfo roomInfo, required bool isRed}) {
+    if (isRed) {
+      return roomInfo.roomStatus == RoomStatus.redReady ||
+          roomInfo.roomStatus == RoomStatus.allReady;
+    } else {
+      return roomInfo.roomStatus == RoomStatus.blackReady ||
+          roomInfo.roomStatus == RoomStatus.allReady;
+    }
+  }
+
+  void enterGame() {
+    GameManager.enterGame(context);
+  }
+
   Widget waitingRoomCard(
       {required BoxConstraints constraints,
       required String title,
-      required String? playerName}) {
+      required String? playerName,
+      required bool playerReady}) {
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -124,7 +146,8 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
                       padding: const EdgeInsets.all(8),
                       child: Text(
                         playerName,
-                        style: const TextStyle(color: Colors.green),
+                        style: TextStyle(
+                            color: playerReady ? Colors.green : Colors.red),
                       ),
                     )
                   : const SizedBox()

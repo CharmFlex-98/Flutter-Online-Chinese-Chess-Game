@@ -1,4 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:mobile_chinese_chess/info/roomInfo.dart';
+import 'package:mobile_chinese_chess/info/userInfo.dart';
+import 'package:mobile_chinese_chess/pages/in_game_page.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
+import 'package:provider/provider.dart';
 
 class GameManager {
   static late bool _isRedTurn;
@@ -62,5 +67,30 @@ class GameManager {
 
   static bool gameIsEnd() {
     return _gameEnd;
+  }
+
+  static void restartGame() {
+    reset();
+  }
+
+  static void reset() {
+    _gameEnd = false;
+    _isRedTurn = true;
+    _win = false;
+  }
+
+  static void enterGame(BuildContext context) async {
+    RoomInfo roomInfo = Provider.of<RoomInfo>(context, listen: false);
+    if (roomInfo.playerInRedTeam(UserInfo.username)) {
+      GameManager.init(isRedTeam: true);
+    } else {
+      GameManager.init(isRedTeam: false);
+    }
+    await Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return const InGamePage();
+    }));
+
+    // after pop out from the game mode, need to refresh the waiting room.
+    roomInfo.notify();
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
+import 'package:mobile_chinese_chess/info/gameStatusInfo.dart';
 import 'package:mobile_chinese_chess/info/lobbyInfo.dart';
 import 'package:mobile_chinese_chess/info/roomInfo.dart';
 import 'package:mobile_chinese_chess/pages/login_page.dart';
@@ -18,7 +19,8 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => LobbyInfo()),
-        ChangeNotifierProvider(create: (_) => RoomInfo())
+        ChangeNotifierProvider(create: (_) => RoomInfo()),
+        ChangeNotifierProvider(create: (_) => GameStatusInfo())
       ],
       child: MaterialApp(
         color: mC,
