@@ -1,10 +1,10 @@
-import 'package:flutter/src/rendering/box.dart';
 import 'package:mobile_chinese_chess/piece_model/piece.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
 
 class Soldier extends Piece {
-  Soldier(int xIndex, int yIndex, bool isRed, String imagePath)
-      : super(xIndex, yIndex, isRed, imagePath);
+  Soldier(double pieceWidth, double pieceHeight, int xIndex, int yIndex,
+      bool isRed, String imagePath)
+      : super(pieceWidth, pieceHeight, xIndex, yIndex, isRed, imagePath);
 
   @override
   List<Point> possibleMovePoint(List<List<Piece?>> board) {

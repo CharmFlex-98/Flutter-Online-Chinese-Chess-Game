@@ -3,6 +3,8 @@ import 'package:mobile_chinese_chess/utilities.dart';
 abstract class Piece {
   static const maxY = 9;
   static const maxX = 8;
+  double pieceWidth;
+  double pieceHeight;
   late Point initialPoint;
   late Point currentPoint;
   Point? tempPoint;
@@ -10,9 +12,18 @@ abstract class Piece {
   bool isRed;
   late List<Point> killPoint = [];
 
-  Piece(int xIndex, int yIndex, this.isRed, this.imagePath) {
+  Piece(this.pieceWidth, this.pieceHeight, int xIndex, int yIndex, this.isRed,
+      this.imagePath) {
     initialPoint = Point(xIndex, yIndex);
     currentPoint = Point(xIndex, yIndex); // avoid referencing
+  }
+
+  void setHeight(double height) {
+    pieceHeight = height;
+  }
+
+  void setWidth(double width) {
+    pieceWidth = width;
   }
 
   void resetPos() {

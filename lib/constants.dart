@@ -1,4 +1,5 @@
 //Route
+String loginPage = "loginPage";
 String lobbyPage = "/lobbyPage";
 String inGamePage = "/inGamePage";
 

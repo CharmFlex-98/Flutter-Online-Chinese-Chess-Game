@@ -3,8 +3,9 @@ import 'package:mobile_chinese_chess/piece_model/piece.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
 
 class Guide extends Piece {
-  Guide(int xIndex, int yIndex, bool isRed, String imagePath)
-      : super(xIndex, yIndex, isRed, imagePath);
+  Guide(double pieceWidth, double pieceHeight, int xIndex, int yIndex,
+      bool isRed, String imagePath)
+      : super(pieceWidth, pieceHeight, xIndex, yIndex, isRed, imagePath);
 
   @override
   List<Point> possibleMovePoint(List<List<Piece?>> board) {

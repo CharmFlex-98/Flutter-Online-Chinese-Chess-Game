@@ -31,8 +31,9 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: const LoginPage(),
+        initialRoute: loginPage,
         routes: {
+          loginPage: (context) => const LoginPage(),
           lobbyPage: (context) => LobbyPage(),
           inGamePage: (context) => InGamePage()
         },

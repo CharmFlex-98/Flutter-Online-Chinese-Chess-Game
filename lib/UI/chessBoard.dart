@@ -17,106 +17,113 @@ import 'package:provider/provider.dart';
 
 class ChessBoard extends StatefulWidget {
   final BoxConstraints constraints;
-  late final double pieceWidth;
-  late final double pieceHeight;
   late final double xOffset;
   late final double yOffset;
   late final List<Piece> pieces;
 
   ChessBoard({required this.constraints, Key? key}) : super(key: key) {
-    pieces = initPiecesPos(GameManager.isRedTeam());
+    pieces = initPieces();
     initBoardDim();
   }
 
   void initBoardDim() {
-    pieceWidth = constraints.maxWidth / 9;
-    pieceHeight = constraints.maxHeight / 10;
-    xOffset = 36 / 642 * constraints.maxWidth - pieceWidth / 2;
-    yOffset = 31 / 720 * constraints.maxHeight - pieceHeight / 2;
+    xOffset = 36 / 642 * constraints.maxWidth - getPieceWidth() / 2;
+    yOffset = 31 / 720 * constraints.maxHeight - getPieceHeight() / 2;
   }
 
-  List<Piece> initPiecesPos(bool isRedTeam) {
+  List<Piece> initPieces() {
+    double pieceWidth = getPieceWidth();
+    double pieceHeight = getPieceHeight();
+    bool isRedTeam = GameManager.isRedTeam();
     if (isRedTeam) {
       return [
         // red
-        Rook(0, 9, true, "assets/r_rook.png"),
-        Knight(1, 9, true, "assets/r_knight.png"),
-        Elephant(2, 9, true, "assets/r_elephant.png"),
-        Guide(3, 9, true, "assets/r_guide.png"),
-        King(4, 9, true, "assets/r_king.png"),
-        Guide(5, 9, true, "assets/r_guide.png"),
-        Elephant(6, 9, true, "assets/r_elephant.png"),
-        Knight(7, 9, true, "assets/r_knight.png"),
-        Rook(8, 9, true, "assets/r_rook.png"),
-        Canon(1, 7, true, "assets/r_canon.png"),
-        Canon(7, 7, true, "assets/r_canon.png"),
-        Soldier(0, 6, true, "assets/r_soldier.png"),
-        Soldier(2, 6, true, "assets/r_soldier.png"),
-        Soldier(4, 6, true, "assets/r_soldier.png"),
-        Soldier(6, 6, true, "assets/r_soldier.png"),
-        Soldier(8, 6, true, "assets/r_soldier.png"),
+        Rook(pieceWidth, pieceHeight, 0, 9, true, "assets/r_rook.png"),
+        Knight(pieceWidth, pieceHeight, 1, 9, true, "assets/r_knight.png"),
+        Elephant(pieceWidth, pieceHeight, 2, 9, true, "assets/r_elephant.png"),
+        Guide(pieceWidth, pieceHeight, 3, 9, true, "assets/r_guide.png"),
+        King(pieceWidth, pieceHeight, 4, 9, true, "assets/r_king.png"),
+        Guide(pieceWidth, pieceHeight, 5, 9, true, "assets/r_guide.png"),
+        Elephant(pieceWidth, pieceHeight, 6, 9, true, "assets/r_elephant.png"),
+        Knight(pieceWidth, pieceHeight, 7, 9, true, "assets/r_knight.png"),
+        Rook(pieceWidth, pieceHeight, 8, 9, true, "assets/r_rook.png"),
+        Canon(pieceWidth, pieceHeight, 1, 7, true, "assets/r_canon.png"),
+        Canon(pieceWidth, pieceHeight, 7, 7, true, "assets/r_canon.png"),
+        Soldier(pieceWidth, pieceHeight, 0, 6, true, "assets/r_soldier.png"),
+        Soldier(pieceWidth, pieceHeight, 2, 6, true, "assets/r_soldier.png"),
+        Soldier(pieceWidth, pieceHeight, 4, 6, true, "assets/r_soldier.png"),
+        Soldier(pieceWidth, pieceHeight, 6, 6, true, "assets/r_soldier.png"),
+        Soldier(pieceWidth, pieceHeight, 8, 6, true, "assets/r_soldier.png"),
 
         // black
-        Rook(0, 0, false, "assets/b_rook.png"),
-        Knight(1, 0, false, "assets/b_knight.png"),
-        Elephant(2, 0, false, "assets/b_elephant.png"),
-        Guide(3, 0, false, "assets/b_guide.png"),
-        King(4, 0, false, "assets/b_king.png"),
-        Guide(5, 0, false, "assets/b_guide.png"),
-        Elephant(6, 0, false, "assets/b_elephant.png"),
-        Knight(7, 0, false, "assets/b_knight.png"),
-        Rook(8, 0, false, "assets/b_rook.png"),
-        Canon(1, 2, false, "assets/b_canon.png"),
-        Canon(7, 2, false, "assets/b_canon.png"),
-        Soldier(0, 3, false, "assets/b_soldier.png"),
-        Soldier(2, 3, false, "assets/b_soldier.png"),
-        Soldier(4, 3, false, "assets/b_soldier.png"),
-        Soldier(6, 3, false, "assets/b_soldier.png"),
-        Soldier(8, 3, false, "assets/b_soldier.png"),
+        Rook(pieceWidth, pieceHeight, 0, 0, false, "assets/b_rook.png"),
+        Knight(pieceWidth, pieceHeight, 1, 0, false, "assets/b_knight.png"),
+        Elephant(pieceWidth, pieceHeight, 2, 0, false, "assets/b_elephant.png"),
+        Guide(pieceWidth, pieceHeight, 3, 0, false, "assets/b_guide.png"),
+        King(pieceWidth, pieceHeight, 4, 0, false, "assets/b_king.png"),
+        Guide(pieceWidth, pieceHeight, 5, 0, false, "assets/b_guide.png"),
+        Elephant(pieceWidth, pieceHeight, 6, 0, false, "assets/b_elephant.png"),
+        Knight(pieceWidth, pieceHeight, 7, 0, false, "assets/b_knight.png"),
+        Rook(pieceWidth, pieceHeight, 8, 0, false, "assets/b_rook.png"),
+        Canon(pieceWidth, pieceHeight, 1, 2, false, "assets/b_canon.png"),
+        Canon(pieceWidth, pieceHeight, 7, 2, false, "assets/b_canon.png"),
+        Soldier(pieceWidth, pieceHeight, 0, 3, false, "assets/b_soldier.png"),
+        Soldier(pieceWidth, pieceHeight, 2, 3, false, "assets/b_soldier.png"),
+        Soldier(pieceWidth, pieceHeight, 4, 3, false, "assets/b_soldier.png"),
+        Soldier(pieceWidth, pieceHeight, 6, 3, false, "assets/b_soldier.png"),
+        Soldier(pieceWidth, pieceHeight, 8, 3, false, "assets/b_soldier.png"),
       ];
     }
 
     return [
       // red
-      Rook(0, 0, true, "assets/r_rook.png"),
-      Knight(1, 0, true, "assets/r_knight.png"),
-      Elephant(2, 0, true, "assets/r_elephant.png"),
-      Guide(3, 0, true, "assets/r_guide.png"),
-      King(4, 0, true, "assets/r_king.png"),
-      Guide(5, 0, true, "assets/r_guide.png"),
-      Elephant(6, 0, true, "assets/r_elephant.png"),
-      Knight(7, 0, true, "assets/r_knight.png"),
-      Rook(8, 9, true, "assets/r_rook.png"),
-      Canon(1, 2, true, "assets/r_canon.png"),
-      Canon(7, 2, true, "assets/r_canon.png"),
-      Soldier(0, 3, true, "assets/r_soldier.png"),
-      Soldier(2, 3, true, "assets/r_soldier.png"),
-      Soldier(4, 3, true, "assets/r_soldier.png"),
-      Soldier(6, 3, true, "assets/r_soldier.png"),
-      Soldier(8, 3, true, "assets/r_soldier.png"),
+      Rook(pieceWidth, pieceHeight, 0, 0, true, "assets/r_rook.png"),
+      Knight(pieceWidth, pieceHeight, 1, 0, true, "assets/r_knight.png"),
+      Elephant(pieceWidth, pieceHeight, 2, 0, true, "assets/r_elephant.png"),
+      Guide(pieceWidth, pieceHeight, 3, 0, true, "assets/r_guide.png"),
+      King(pieceWidth, pieceHeight, 4, 0, true, "assets/r_king.png"),
+      Guide(pieceWidth, pieceHeight, 5, 0, true, "assets/r_guide.png"),
+      Elephant(pieceWidth, pieceHeight, 6, 0, true, "assets/r_elephant.png"),
+      Knight(pieceWidth, pieceHeight, 7, 0, true, "assets/r_knight.png"),
+      Rook(pieceWidth, pieceHeight, 8, 9, true, "assets/r_rook.png"),
+      Canon(pieceWidth, pieceHeight, 1, 2, true, "assets/r_canon.png"),
+      Canon(pieceWidth, pieceHeight, 7, 2, true, "assets/r_canon.png"),
+      Soldier(pieceWidth, pieceHeight, 0, 3, true, "assets/r_soldier.png"),
+      Soldier(pieceWidth, pieceHeight, 2, 3, true, "assets/r_soldier.png"),
+      Soldier(pieceWidth, pieceHeight, 4, 3, true, "assets/r_soldier.png"),
+      Soldier(pieceWidth, pieceHeight, 6, 3, true, "assets/r_soldier.png"),
+      Soldier(pieceWidth, pieceHeight, 8, 3, true, "assets/r_soldier.png"),
 
       // black
-      Rook(0, 9, false, "assets/b_rook.png"),
-      Knight(1, 9, false, "assets/b_knight.png"),
-      Elephant(2, 9, false, "assets/b_elephant.png"),
-      Guide(3, 9, false, "assets/b_guide.png"),
-      King(4, 9, false, "assets/b_king.png"),
-      Guide(5, 9, false, "assets/b_guide.png"),
-      Elephant(6, 9, false, "assets/b_elephant.png"),
-      Knight(7, 9, false, "assets/b_knight.png"),
-      Rook(8, 9, false, "assets/b_rook.png"),
-      Canon(1, 7, false, "assets/b_canon.png"),
-      Canon(7, 7, false, "assets/b_canon.png"),
-      Soldier(0, 6, false, "assets/b_soldier.png"),
-      Soldier(2, 6, false, "assets/b_soldier.png"),
-      Soldier(4, 6, false, "assets/b_soldier.png"),
-      Soldier(6, 6, false, "assets/b_soldier.png"),
-      Soldier(8, 6, false, "assets/b_soldier.png"),
+      Rook(pieceWidth, pieceHeight, 0, 9, false, "assets/b_rook.png"),
+      Knight(pieceWidth, pieceHeight, 1, 9, false, "assets/b_knight.png"),
+      Elephant(pieceWidth, pieceHeight, 2, 9, false, "assets/b_elephant.png"),
+      Guide(pieceWidth, pieceHeight, 3, 9, false, "assets/b_guide.png"),
+      King(pieceWidth, pieceHeight, 4, 9, false, "assets/b_king.png"),
+      Guide(pieceWidth, pieceHeight, 5, 9, false, "assets/b_guide.png"),
+      Elephant(pieceWidth, pieceHeight, 6, 9, false, "assets/b_elephant.png"),
+      Knight(pieceWidth, pieceHeight, 7, 9, false, "assets/b_knight.png"),
+      Rook(pieceWidth, pieceHeight, 8, 9, false, "assets/b_rook.png"),
+      Canon(pieceWidth, pieceHeight, 1, 7, false, "assets/b_canon.png"),
+      Canon(pieceWidth, pieceHeight, 7, 7, false, "assets/b_canon.png"),
+      Soldier(pieceWidth, pieceHeight, 0, 6, false, "assets/b_soldier.png"),
+      Soldier(pieceWidth, pieceHeight, 2, 6, false, "assets/b_soldier.png"),
+      Soldier(pieceWidth, pieceHeight, 4, 6, false, "assets/b_soldier.png"),
+      Soldier(pieceWidth, pieceHeight, 6, 6, false, "assets/b_soldier.png"),
+      Soldier(pieceWidth, pieceHeight, 8, 6, false, "assets/b_soldier.png"),
     ];
   }
 
   @override
   State<ChessBoard> createState() => _ChessBoardState();
+
+  double getPieceWidth() {
+    return constraints.maxWidth / 9;
+  }
+
+  double getPieceHeight() {
+    return constraints.maxHeight / 10;
+  }
 }
 
 class _ChessBoardState extends State<ChessBoard> {
@@ -226,8 +233,8 @@ class _ChessBoardState extends State<ChessBoard> {
             });
           },
           child: SizedBox(
-            height: widget.pieceHeight,
-            width: widget.pieceWidth,
+            height: piece.pieceHeight,
+            width: piece.pieceWidth,
             child: Image.asset(
               piece.imagePath,
               fit: BoxFit.contain,
@@ -320,8 +327,8 @@ class _ChessBoardState extends State<ChessBoard> {
       foregroundPainter: BoundingBoxPainter(
           getXPos(piece, xIndex: piece.currentPoint.x),
           getYPos(piece, yIndex: piece.currentPoint.y),
-          widget.pieceWidth,
-          widget.pieceHeight,
+          piece.pieceWidth,
+          piece.pieceHeight,
           Colors.green),
     ));
 
@@ -330,8 +337,8 @@ class _ChessBoardState extends State<ChessBoard> {
         foregroundPainter: BoundingBoxPainter(
             getXPos(piece, xIndex: point.x),
             getYPos(piece, yIndex: point.y),
-            widget.pieceWidth,
-            widget.pieceHeight,
+            piece.pieceWidth,
+            piece.pieceHeight,
             Colors.green),
       ));
     }
@@ -345,8 +352,8 @@ class _ChessBoardState extends State<ChessBoard> {
           foregroundPainter: BoundingBoxPainter(
               getXPos(piece, xIndex: point.x),
               getYPos(piece, yIndex: point.y),
-              widget.pieceWidth,
-              widget.pieceHeight,
+              piece.pieceWidth,
+              piece.pieceHeight,
               Colors.red),
         ),
       );
@@ -386,7 +393,7 @@ class _ChessBoardState extends State<ChessBoard> {
 
   double getYPos(Piece piece, {int? yIndex}) {
     double offset =
-        31 / 720 * widget.constraints.maxHeight - widget.pieceHeight / 2;
+        31 / 720 * widget.constraints.maxHeight - piece.pieceHeight / 2;
 
     if (yIndex != null) {
       return offset + yIndex * (widget.constraints.maxHeight * 660 / 720) / 9;

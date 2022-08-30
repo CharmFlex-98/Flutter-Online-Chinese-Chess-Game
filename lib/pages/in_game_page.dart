@@ -14,6 +14,7 @@ class InGamePage extends StatefulWidget {
 class _InGamePageState extends State<InGamePage> {
   @override
   Widget build(BuildContext context) {
+    print("build");
     return Scaffold(
         appBar: AppBar(
           title: const Text("Mobile Chinese Chess"),
