@@ -87,7 +87,7 @@ class GameManager {
       GameManager.init(isRedTeam: false);
     }
     await Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return const InGamePage();
+      return InGamePage();
     }));
 
     // after pop out from the game mode, need to refresh the waiting room.

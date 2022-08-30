@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:mobile_chinese_chess/client/constants.dart';
+import 'package:mobile_chinese_chess/constants.dart';
 import 'package:mobile_chinese_chess/client/socket_client.dart';
 import 'package:mobile_chinese_chess/info/gameStatusInfo.dart';
 import 'package:mobile_chinese_chess/info/lobbyInfo.dart';
@@ -8,8 +8,6 @@ import 'package:mobile_chinese_chess/info/opponentMoveInfo.dart';
 import 'package:mobile_chinese_chess/info/roomInfo.dart';
 import 'package:mobile_chinese_chess/info/userInfo.dart';
 import 'package:mobile_chinese_chess/game_manager.dart';
-import 'package:mobile_chinese_chess/pages/in_game_page.dart';
-import 'package:mobile_chinese_chess/pages/lobby_page.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/waiting_room_widget.dart';
@@ -73,13 +71,12 @@ class SocketMethods {
   // Login page
   void loginSucessedListener(BuildContext context) {
     socketClient.on(loginSuccessed, (data) {
+      print(data);
       String username = data["username"];
       Provider.of<LobbyInfo>(context, listen: false).updateInfo(data);
       UserInfo.initUser(username);
 
-      Navigator.push(context, MaterialPageRoute(builder: (context) {
-        return const LobbyPage();
-      }));
+      Navigator.pushNamed(context, lobbyPage);
     });
   }
 
@@ -169,16 +166,13 @@ class SocketMethods {
 
   void enterGameListener(BuildContext context) {
     socketClient.on(enterGame, (data) async {
-      print("enter game");
       RoomInfo roomInfo = Provider.of<RoomInfo>(context, listen: false);
       if (roomInfo.playerInRedTeam(UserInfo.username)) {
         GameManager.init(isRedTeam: true);
       } else {
         GameManager.init(isRedTeam: false);
       }
-      await Navigator.push(context, MaterialPageRoute(builder: (context) {
-        return const InGamePage();
-      }));
+      await Navigator.pushNamed(context, inGamePage);
 
       // after pop out from the game mode, need to refresh the waiting room.
       roomInfo.notify();

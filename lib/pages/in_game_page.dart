@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/UI/chessBoard.dart';
+import 'package:mobile_chinese_chess/constants.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
 
 class InGamePage extends StatefulWidget {
-  const InGamePage({Key? key}) : super(key: key);
+  final String pageRoute = inGamePage;
+  InGamePage({Key? key}) : super(key: key);
 
   @override
   _InGamePageState createState() => _InGamePageState();

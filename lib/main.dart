@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
+import 'package:mobile_chinese_chess/constants.dart';
 import 'package:mobile_chinese_chess/info/gameStatusInfo.dart';
 import 'package:mobile_chinese_chess/info/lobbyInfo.dart';
 import 'package:mobile_chinese_chess/info/roomInfo.dart';
+import 'package:mobile_chinese_chess/pages/in_game_page.dart';
+import 'package:mobile_chinese_chess/pages/lobby_page.dart';
 import 'package:mobile_chinese_chess/pages/login_page.dart';
 import 'package:provider/provider.dart';
 
@@ -29,6 +32,10 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
         ),
         home: const LoginPage(),
+        routes: {
+          lobbyPage: (context) => LobbyPage(),
+          inGamePage: (context) => InGamePage()
+        },
       ),
     );
   }

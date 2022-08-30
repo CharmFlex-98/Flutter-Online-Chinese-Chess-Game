@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
-import 'package:mobile_chinese_chess/client/constants.dart';
+import 'package:mobile_chinese_chess/constants.dart';
 import 'package:mobile_chinese_chess/client/socket_methods.dart';
 import 'package:mobile_chinese_chess/game_manager.dart';
 import 'package:mobile_chinese_chess/info/roomInfo.dart';

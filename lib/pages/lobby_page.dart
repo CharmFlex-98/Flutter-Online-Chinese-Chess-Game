@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
-import 'package:mobile_chinese_chess/client/constants.dart';
+import 'package:mobile_chinese_chess/constants.dart';
 import 'package:mobile_chinese_chess/client/socket_methods.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
 import 'package:mobile_chinese_chess/widgets/lobby_widgets/notification_banner.dart';
@@ -10,7 +10,8 @@ import '../info/lobbyInfo.dart';
 import '../widgets/lobby_widgets/room_list_box.dart';
 
 class LobbyPage extends StatefulWidget {
-  const LobbyPage({Key? key}) : super(key: key);
+  final String pageRoute = lobbyPage;
+  LobbyPage({Key? key}) : super(key: key);
 
   @override
   State<LobbyPage> createState() => _LobbyPageState();

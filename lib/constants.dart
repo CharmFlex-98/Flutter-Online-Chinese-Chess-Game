@@ -1,3 +1,8 @@
+//Route
+String lobbyPage = "/lobbyPage";
+String inGamePage = "/inGamePage";
+
+//Socket
 String loginSuccessed = "loginSuccessed";
 
 String createRoomSuccessed = "createRoomSuccessed";
