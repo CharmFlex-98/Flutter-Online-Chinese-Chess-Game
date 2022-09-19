@@ -3,7 +3,7 @@ import 'package:mobile_chinese_chess/UI/game_ui.dart';
 import 'package:mobile_chinese_chess/constants.dart';
 import 'package:mobile_chinese_chess/client/socket_methods.dart';
 import 'package:mobile_chinese_chess/game_manager.dart';
-import 'package:mobile_chinese_chess/info/roomInfo.dart';
+import 'package:mobile_chinese_chess/info/room_info.dart';
 import 'package:provider/provider.dart';
 
 class WaitingRoomWidget extends StatefulWidget {
@@ -69,7 +69,6 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
                     padding: const EdgeInsets.all(12.0),
                     child: ElevatedButton(
                         onPressed: () {
-                          print("pressed leave");
                           SocketMethods().leaveRoom(roomInfo.roomID!);
                         },
                         child: const Text("Leave Room")),
@@ -102,7 +101,7 @@ class _WaitingRoomWidgetState extends State<WaitingRoomWidget> {
   }
 
   void enterGame() {
-    GameManager.enterGame(context);
+    GameManager().instance().enterGame(context);
   }
 
   Widget waitingRoomCard(

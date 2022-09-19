@@ -6,7 +6,7 @@ import 'package:mobile_chinese_chess/utilities.dart';
 import 'package:mobile_chinese_chess/widgets/lobby_widgets/notification_banner.dart';
 import 'package:provider/provider.dart';
 
-import '../info/lobbyInfo.dart';
+import '../info/lobby_info.dart';
 import '../widgets/lobby_widgets/room_list_box.dart';
 
 class LobbyPage extends StatefulWidget {
@@ -36,9 +36,7 @@ class _LobbyPageState extends State<LobbyPage> {
 
   @override
   Widget build(BuildContext context) {
-    print("build lobby");
     LobbyInfo lobbyInfo = Provider.of<LobbyInfo>(context);
-    print(lobbyInfo);
 
     return Scaffold(
         backgroundColor: mC,

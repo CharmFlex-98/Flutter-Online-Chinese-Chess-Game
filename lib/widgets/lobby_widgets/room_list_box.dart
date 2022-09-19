@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/UI/game_ui.dart';
 import 'package:mobile_chinese_chess/client/socket_methods.dart';
 
-import '../../info/lobbyInfo.dart';
+import '../../info/lobby_info.dart';
 
 class RoomListBox extends StatefulWidget {
-  LobbyInfo lobbyInfo;
-  RoomListBox({required this.lobbyInfo, Key? key}) : super(key: key);
+  final LobbyInfo lobbyInfo;
+  const RoomListBox({required this.lobbyInfo, Key? key}) : super(key: key);
 
   @override
   State<RoomListBox> createState() => _RoomListBoxState();

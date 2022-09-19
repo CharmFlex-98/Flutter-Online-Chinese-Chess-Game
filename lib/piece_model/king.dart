@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/piece_model/piece.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
 

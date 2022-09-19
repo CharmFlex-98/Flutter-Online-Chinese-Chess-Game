@@ -1,94 +1,124 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_chinese_chess/client/socket_client.dart';
 import 'package:mobile_chinese_chess/constants.dart';
-import 'package:mobile_chinese_chess/info/roomInfo.dart';
-import 'package:mobile_chinese_chess/info/userInfo.dart';
+import 'package:mobile_chinese_chess/info/game_status_info.dart';
+import 'package:mobile_chinese_chess/info/room_info.dart';
+import 'package:mobile_chinese_chess/info/user_info.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
 import 'package:provider/provider.dart';
 
+// This class is a singleton
 class GameManager {
-  static late bool _isRedTurn;
-  static late bool _win;
-  static late bool _isRedTeam;
-  static bool _gameEnd = false;
+  static GameManager? _instance;
+  late bool _isRedTurn;
+  late bool _win;
+  late bool _isRedTeam;
+  bool _gameEnd = false;
 
-  static void init({bool isRedTeam = true}) {
+  GameManager instance() {
+    _instance ??= this;
+
+    return _instance!;
+  }
+
+  void init({bool isRedTeam = true}) {
     _isRedTurn = true;
     setTeam(isRedTeam: isRedTeam);
   }
 
-  static void changeTurn() {
+  void changeTurn() {
     _isRedTurn = !_isRedTurn;
   }
 
-  static setRedTurn() {
+  setRedTurn() {
     _isRedTurn = true;
   }
 
-  static bool isRedTurn() {
+  bool isRedTurn() {
     return _isRedTurn;
   }
 
-  static setBlackTurn() {
+  setBlackTurn() {
     _isRedTurn = false;
   }
 
-  static Point boardPointConvert(Point pointFrom) {
+  Point boardPointConvert(Point pointFrom) {
     int x = boardPointXConvert(pointFrom.x);
     int y = boardPointYConvert(pointFrom.y);
 
     return Point(x, y);
   }
 
-  static int boardPointXConvert(int pointX) {
+  int boardPointXConvert(int pointX) {
     return 8 - pointX;
   }
 
-  static int boardPointYConvert(int pointY) {
+  int boardPointYConvert(int pointY) {
     return 9 - pointY;
   }
 
-  static bool win() {
+  bool win() {
     return _win;
   }
 
-  static bool isRedTeam() {
+  bool isRedTeam() {
     return _isRedTeam;
   }
 
-  static void setTeam({bool isRedTeam = true}) {
+  void setTeam({bool isRedTeam = true}) {
     _isRedTeam = isRedTeam;
   }
 
-  static void endGame({bool redWin = true}) {
+  void endGame({bool redWin = true}) {
     _gameEnd = true;
     _win = redWin && isRedTeam() ? true : false;
-    print(_win);
   }
 
-  static bool gameIsEnd() {
+  bool gameIsEnd() {
     return _gameEnd;
   }
 
-  static void restartGame() {
+  void restartGame() {
     reset();
   }
 
-  static void reset() {
+  void reset() {
     _gameEnd = false;
     _isRedTurn = true;
     _win = false;
   }
 
-  static void enterGame(BuildContext context) async {
+  void enterGame(BuildContext context) async {
     RoomInfo roomInfo = Provider.of<RoomInfo>(context, listen: false);
     if (roomInfo.playerInRedTeam(UserInfo.username)) {
-      GameManager.init(isRedTeam: true);
+      init(isRedTeam: true);
     } else {
-      GameManager.init(isRedTeam: false);
+      init(isRedTeam: false);
     }
     await Navigator.pushNamed(context, inGamePage);
 
     // after pop out from the game mode, need to refresh the waiting room.
     roomInfo.notify();
+  }
+
+  void leaveGame(BuildContext context) {
+    GameStatusInfo gameStatusInfo =
+        Provider.of<GameStatusInfo>(context, listen: false);
+    RoomInfo roomInfo = Provider.of<RoomInfo>(context, listen: false);
+
+    final socketClient = SocketClient.instance().socket!;
+    socketClient.emit("leaveGame", {"roomID": roomInfo.roomID});
+
+    resetAllStatusAndLeave(context, gameStatusInfo, roomInfo);
+  }
+
+  void resetAllStatusAndLeave(
+      BuildContext context, GameStatusInfo gameStatusInfo, RoomInfo roomInfo) {
+    gameStatusInfo.resetInfo();
+    roomInfo.resetRoomStatus();
+    GameManager().instance().reset();
+
+    Navigator.of(context).popUntil(ModalRoute.withName(inGamePage));
+    Navigator.of(context).pop();
   }
 }

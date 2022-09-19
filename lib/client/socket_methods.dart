@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mobile_chinese_chess/constants.dart';
 import 'package:mobile_chinese_chess/client/socket_client.dart';
-import 'package:mobile_chinese_chess/info/gameStatusInfo.dart';
-import 'package:mobile_chinese_chess/info/lobbyInfo.dart';
-import 'package:mobile_chinese_chess/info/opponentMoveInfo.dart';
-import 'package:mobile_chinese_chess/info/roomInfo.dart';
-import 'package:mobile_chinese_chess/info/userInfo.dart';
+import 'package:mobile_chinese_chess/info/game_status_info.dart';
+import 'package:mobile_chinese_chess/info/lobby_info.dart';
+import 'package:mobile_chinese_chess/info/opponent_move_info.dart';
+import 'package:mobile_chinese_chess/info/room_info.dart';
+import 'package:mobile_chinese_chess/info/user_info.dart';
 import 'package:mobile_chinese_chess/game_manager.dart';
 import 'package:provider/provider.dart';
 
@@ -71,7 +71,6 @@ class SocketMethods {
   // Login page
   void loginSucessedListener(BuildContext context) {
     socketClient.on(loginSuccessed, (data) {
-      print(data);
       String username = data["username"];
       Provider.of<LobbyInfo>(context, listen: false).updateInfo(data);
       UserInfo.initUser(username);
@@ -88,7 +87,6 @@ class SocketMethods {
   }
 
   void createRoomSuccessedListener(BuildContext context) {
-    print("create room successed");
     socketClient.on(createRoomSuccessed, (data) {
       Provider.of<RoomInfo>(context, listen: false).updateInfo(data);
       showModalBottomSheet(
@@ -140,9 +138,7 @@ class SocketMethods {
 
   // Waiting Room
   void roomStatusChangedListener(BuildContext context) {
-    print("init listener");
     socketClient.on(roomStatusChanged, (data) {
-      print("get data");
       Provider.of<RoomInfo>(context, listen: false).updateInfo(data);
     });
   }
@@ -166,16 +162,7 @@ class SocketMethods {
 
   void enterGameListener(BuildContext context) {
     socketClient.on(enterGame, (data) async {
-      RoomInfo roomInfo = Provider.of<RoomInfo>(context, listen: false);
-      if (roomInfo.playerInRedTeam(UserInfo.username)) {
-        GameManager.init(isRedTeam: true);
-      } else {
-        GameManager.init(isRedTeam: false);
-      }
-      await Navigator.pushNamed(context, inGamePage);
-
-      // after pop out from the game mode, need to refresh the waiting room.
-      roomInfo.notify();
+      GameManager().instance().restartGame();
     });
   }
 
@@ -196,19 +183,17 @@ class SocketMethods {
       if (ModalRoute.of(context)?.isCurrent != true) {
         Navigator.of(context, rootNavigator: true).pop();
       }
-      print("just at listener start");
       GameStatusInfo info = Provider.of<GameStatusInfo>(context, listen: false);
       info.updateInfo(data);
 
       // if restart game
       if (info.restartGame) {
-        print("begin");
         restartFunc();
         // pop until chess UI route
         while (ModalRoute.of(context)?.isCurrent != true) {
           Navigator.of(context).pop();
         }
-        print("after pop");
+        Navigator.of(context).popUntil(ModalRoute.withName(inGamePage));
         info.resetInfo();
         return;
       }
@@ -238,8 +223,7 @@ class SocketMethods {
                                   child: const Text("Restart")),
                               TextButton(
                                   onPressed: () {
-                                    leaveGame(
-                                        context, gameStatusInfo, roomInfo);
+                                    GameManager().instance().leaveGame(context);
                                   },
                                   child: const Text("Leave"))
                             ]
@@ -281,7 +265,7 @@ class SocketMethods {
     socketClient.on(opponentLeftGame, (data) {
       GameStatusInfo info = Provider.of<GameStatusInfo>(context, listen: false);
       RoomInfo roomInfo = Provider.of<RoomInfo>(context, listen: false);
-      resetAllStatusAndLeave(context, info, roomInfo);
+      GameManager().instance().resetAllStatusAndLeave(context, info, roomInfo);
     });
   }
 }
@@ -325,26 +309,4 @@ void refuseRequest(
     gameStatusInfo.restartInviting = false;
     socketClient.emit("restartRefused", {"roomID": roomInfo.roomID});
   });
-}
-
-void leaveGame(
-    BuildContext context, GameStatusInfo gameStatusInfo, RoomInfo roomInfo) {
-  final socketClient = SocketClient.instance().socket!;
-  socketClient.emit("leaveGame", {"roomID": roomInfo.roomID});
-
-  resetAllStatusAndLeave(context, gameStatusInfo, roomInfo);
-}
-
-void resetAllStatusAndLeave(
-    BuildContext context, GameStatusInfo gameStatusInfo, RoomInfo roomInfo) {
-  gameStatusInfo.resetInfo();
-  roomInfo.resetRoomStatus();
-  GameManager.reset();
-
-  while (ModalRoute.of(context)?.isCurrent != true) {
-    Navigator.of(context).pop();
-  }
-  Navigator.of(context).pop();
-
-  print("pop end");
 }

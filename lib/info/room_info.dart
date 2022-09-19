@@ -20,7 +20,6 @@ class RoomInfo extends Info {
 
   @override
   void updateInfo(data) {
-    print("update info");
     dynamic roomInfo = data[keyword()];
 
     _setRoomID(roomInfo);

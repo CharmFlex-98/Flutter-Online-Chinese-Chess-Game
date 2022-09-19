@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile_chinese_chess/constants.dart';
 import 'package:mobile_chinese_chess/client/socket_methods.dart';
 import 'package:mobile_chinese_chess/game_manager.dart';
-import 'package:mobile_chinese_chess/info/opponentMoveInfo.dart';
-import 'package:mobile_chinese_chess/info/roomInfo.dart';
+import 'package:mobile_chinese_chess/info/opponent_move_info.dart';
+import 'package:mobile_chinese_chess/info/room_info.dart';
 import 'package:mobile_chinese_chess/piece_model/canon.dart';
 import 'package:mobile_chinese_chess/piece_model/elephant.dart';
 import 'package:mobile_chinese_chess/piece_model/guide.dart';
@@ -32,9 +32,10 @@ class ChessBoard extends StatefulWidget {
   }
 
   List<Piece> initPieces() {
+    GameManager gameManager = GameManager().instance();
     double pieceWidth = getPieceWidth();
     double pieceHeight = getPieceHeight();
-    bool isRedTeam = GameManager.isRedTeam();
+    bool isRedTeam = gameManager.isRedTeam();
     if (isRedTeam) {
       return [
         // red
@@ -133,7 +134,6 @@ class _ChessBoardState extends State<ChessBoard> {
   List<CustomPaint> killBoundingBoxes = [];
 
   void initBoard() {
-    print("init");
     const row = 10;
     const column = 9;
     board =
@@ -148,9 +148,12 @@ class _ChessBoardState extends State<ChessBoard> {
     }
   }
 
+  GameManager gameManager() {
+    return GameManager().instance();
+  }
+
   @override
   void initState() {
-    print("initstate");
     super.initState();
     initBoard();
     SocketMethods().playerMoveListener(context, opponentMove);
@@ -166,7 +169,7 @@ class _ChessBoardState extends State<ChessBoard> {
   }
 
   void restart() {
-    GameManager.restartGame();
+    gameManager().restartGame();
     setState(() {
       initBoard();
     });
@@ -227,7 +230,7 @@ class _ChessBoardState extends State<ChessBoard> {
               // when we select piece, we need to show
               // available move path and kill path
               // only a side is selectable
-              piece.isRed == GameManager.isRedTurn()
+              piece.isRed == gameManager().isRedTurn()
                   ? selectPiece(piece)
                   : tryKillPiece(piece);
             });
@@ -265,7 +268,7 @@ class _ChessBoardState extends State<ChessBoard> {
 
   void selectPiece(Piece piece) {
     // if the piece is not your fucking piece
-    if (piece.isRed != GameManager.isRedTeam()) return;
+    if (piece.isRed != gameManager().isRedTeam()) return;
 
     if (_selectedPiece == piece) {
       deselectPiece();
@@ -302,7 +305,6 @@ class _ChessBoardState extends State<ChessBoard> {
       required int prevY,
       required int currY}) {
     RoomInfo roomInfo = Provider.of<RoomInfo>(context, listen: false);
-    print("in post");
     moveBoundingBoxes = [];
     killBoundingBoxes = [];
     _selectedPiece = null;
@@ -313,10 +315,10 @@ class _ChessBoardState extends State<ChessBoard> {
         prevY: prevY,
         currY: currY);
 
-    if (checkIfGameEnd(GameManager.isRedTurn())) {
-      GameManager.endGame(redWin: !GameManager.isRedTurn());
+    if (checkIfGameEnd(gameManager().isRedTurn())) {
+      gameManager().endGame(redWin: !gameManager().isRedTurn());
       RoomInfo roomInfo = Provider.of<RoomInfo>(context, listen: false);
-      SocketMethods().endGame(roomInfo.roomID!, GameManager.win());
+      SocketMethods().endGame(roomInfo.roomID!, gameManager().win());
     }
   }
 
@@ -378,8 +380,7 @@ class _ChessBoardState extends State<ChessBoard> {
     board[fromPoint.x][fromPoint.y] = null;
     board[toPoint.x][toPoint.y] = piece;
     piece.move(toPoint);
-    GameManager.changeTurn();
-    print(GameManager.isRedTurn());
+    gameManager().changeTurn();
   }
 
   double getXPos(Piece piece, {int? xIndex}) {
@@ -468,12 +469,6 @@ class _ChessBoardState extends State<ChessBoard> {
     }
 
     return false;
-  }
-
-  void testing(List<List<Piece?>> board, Piece piece) {
-    for (Point point in piece.possibleKillPoint(board)) {
-      print("-->${point.x}, ${point.y}");
-    }
   }
 
   // return false if impossible to avoid from getting killed.

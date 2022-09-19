@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_chinese_chess/UI/chessBoard.dart';
+import 'package:mobile_chinese_chess/UI/chessboard.dart';
 import 'package:mobile_chinese_chess/constants.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
 
@@ -14,7 +14,6 @@ class InGamePage extends StatefulWidget {
 class _InGamePageState extends State<InGamePage> {
   @override
   Widget build(BuildContext context) {
-    print("build");
     return Scaffold(
         appBar: AppBar(
           title: const Text("Mobile Chinese Chess"),

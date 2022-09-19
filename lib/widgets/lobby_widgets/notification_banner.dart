@@ -5,7 +5,7 @@ import 'package:mobile_chinese_chess/client/socket_client.dart';
 import 'package:mobile_chinese_chess/utilities.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
-import '../../info/userInfo.dart';
+import '../../info/user_info.dart';
 
 class NotificationBanner extends StatefulWidget {
   const NotificationBanner({Key? key}) : super(key: key);
